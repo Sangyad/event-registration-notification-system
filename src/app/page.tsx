@@ -1,13 +1,8 @@
-import styles from "./page.module.css";
+import { redirect } from "next/navigation";
 
-export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <div>
-          <h1>Hell World!</h1>
-        </div>
-      </main>
-    </div>
-  );
+import { auth } from "@/lib/auth";
+
+export default async function HomePage() {
+  const session = await auth();
+  redirect(session?.user ? "/dashboard" : "/sign-in");
 }

@@ -1,0 +1,28 @@
+.page {
+  max-width: 42rem;
+  margin: 0 auto;
+}
+.eyebrow {
+  color: var(--color-brand-accent);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.page h1 {
+  margin-top: var(--space-sm);
+  font-size: var(--font-size-3xl);
+}
+.form {
+  margin-top: var(--space-3xl);
+  padding: var(--space-2xl);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-bg);
+}
+.success {
+  padding: var(--space-md);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-success) 14%, transparent);
+  color: var(--color-success);
+}
