@@ -1,0 +1,42 @@
+.bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--progress-bar-height);
+  z-index: var(--z-progress-bar);
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+.bar[data-state="loading"],
+.bar[data-state="completing"] {
+  opacity: 1;
+}
+
+.fill {
+  block-size: 100%;
+  background: var(--color-brand-accent);
+  transition: width var(--transition-slow);
+}
+
+.bar[data-state="loading"] .fill {
+  width: 20%;
+  animation: sweep var(--progress-bar-animation-duration) ease-in-out infinite;
+}
+
+.bar[data-state="completing"] .fill {
+  width: 100%;
+}
+
+@keyframes sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(500%);
+  }
+}

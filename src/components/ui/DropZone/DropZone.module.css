@@ -1,0 +1,56 @@
+.dropZone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-bg);
+  padding: var(--space-2xl);
+  min-height: 160px;
+  outline: none;
+  cursor: pointer;
+  transition:
+    border-color var(--transition-base),
+    background var(--transition-base);
+
+  &[data-focus-visible] {
+    outline: 2px solid var(--color-brand-accent);
+    outline-offset: -1px;
+  }
+
+  &[data-drop-target] {
+    border-color: var(--color-brand-accent);
+    background: var(--color-surface-hover);
+  }
+
+  &[data-disabled] {
+    opacity: var(--opacity-overlay);
+    cursor: not-allowed;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-md);
+    text-align: center;
+
+    .icon {
+      width: var(--icon-size-xl);
+      height: var(--icon-size-xl);
+      color: var(--color-text-muted);
+    }
+
+    .label {
+      font-size: var(--font-size-md);
+      font-weight: var(--font-weight-medium);
+      color: var(--color-text-primary);
+    }
+
+    .description {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      margin: 0;
+    }
+  }
+}

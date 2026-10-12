@@ -1,0 +1,32 @@
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .circle {
+    animation: none;
+  }
+}
+
+.circle {
+  width: 1em;
+  height: 1em;
+  animation: spin 1s linear infinite;
+
+  svg {
+    display: block;
+  }
+
+  .track {
+    stroke: currentColor;
+    opacity: 0.25;
+  }
+
+  .arc {
+    stroke: currentColor;
+    stroke-dasharray: 20 80;
+    stroke-linecap: round;
+  }
+}

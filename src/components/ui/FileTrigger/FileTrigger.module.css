@@ -1,0 +1,43 @@
+.trigger {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-lg) var(--space-xl);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-bg);
+  cursor: pointer;
+  outline: none;
+  transition:
+    border-color var(--transition-base),
+    background var(--transition-base);
+
+  &[data-focus-visible] {
+    outline: 2px solid var(--color-brand-accent);
+    outline-offset: 2px;
+  }
+
+  &.disabled {
+    opacity: var(--opacity-subtle);
+    cursor: not-allowed;
+  }
+
+  .icon {
+    width: var(--icon-size-lg);
+    height: var(--icon-size-lg);
+    color: var(--color-text-muted);
+  }
+
+  .label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+  }
+
+  .description {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
+}

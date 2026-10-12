@@ -38,6 +38,10 @@ secrets/
 # vercel
 .vercel
 
+# storybook
+storybook-static
+*storybook.log
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
