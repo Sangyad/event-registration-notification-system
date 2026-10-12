@@ -1,0 +1,27 @@
+.page {
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--page-padding);
+}
+
+.content {
+  max-width: var(--auth-content-max-width);
+  text-align: center;
+}
+
+.title {
+  margin-bottom: var(--space-lg);
+  color: var(--color-danger);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.message {
+  margin-bottom: var(--space-xl);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-relaxed);
+}

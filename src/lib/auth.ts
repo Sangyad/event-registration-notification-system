@@ -16,7 +16,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   session: { strategy: "database" },
-  pages: { signIn: "/sign-in", error: "/sign-in" },
+  pages: { signIn: "/sign-in", error: "/auth/error" },
   callbacks: {
     async signIn({ user, account, profile }) {
       const emailVerified =
@@ -24,10 +24,10 @@ export const authOptions: NextAuthOptions = {
       if (account?.provider !== "google" || !emailVerified || !user.email) return false;
 
       const email = user.email.toLowerCase();
-      if (!email.endsWith(schoolDomain)) return "/sign-in?error=Domain";
+      if (!email.endsWith(schoolDomain)) return "/auth/error?error=Domain";
 
       const existingUser = await prisma.user.findUnique({ where: { email } });
-      if (existingUser && !existingUser.isActive) return "/sign-in?error=Deactivated";
+      if (existingUser && !existingUser.isActive) return "/auth/error?error=Deactivated";
 
       if (!existingUser) {
         const pending = await prisma.pendingRoleAssignment.findUnique({ where: { email } });
