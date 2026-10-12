@@ -19,7 +19,7 @@
   justify-content: space-between;
   gap: var(--space-lg);
 }
-@media (max-width: 47.99rem) {
+@media (max-width: 48rem) {
   .heading {
     align-items: flex-start;
     flex-direction: column;
@@ -92,7 +92,7 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
 }
-@media (max-width: 47.99rem) {
+@media (max-width: 48rem) {
   .itemHeader {
     align-items: flex-start;
     flex-direction: column;

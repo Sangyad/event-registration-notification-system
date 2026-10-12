@@ -57,7 +57,7 @@
   width: var(--icon-size-sm);
   height: var(--icon-size-sm);
 }
-@media (max-width: 47.99rem) {
+@media (max-width: 48rem) {
   .heading {
     align-items: flex-start;
     flex-direction: column;

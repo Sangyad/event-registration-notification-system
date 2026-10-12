@@ -1,7 +1,7 @@
 .region {
   position: fixed;
-  bottom: var(--space-lg);
-  right: var(--space-lg);
+  bottom: var(--space-3xl);
+  right: var(--space-3xl);
   display: flex;
   flex-direction: column-reverse;
   gap: var(--space-sm);
@@ -12,11 +12,6 @@
   &[data-focus-visible] {
     outline: 2px solid var(--color-brand-accent--focus);
     outline-offset: 2px;
-  }
-
-  @media (min-width: 48rem) {
-    bottom: var(--space-3xl);
-    right: var(--space-3xl);
   }
 
   .toast {
@@ -207,6 +202,7 @@
   .region {
     right: 0;
     left: 0;
+    bottom: var(--space-lg);
     padding: var(--space-sm);
   }
 
