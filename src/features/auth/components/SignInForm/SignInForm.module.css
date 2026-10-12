@@ -1,0 +1,18 @@
+.form {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+}
+
+.button {
+  width: 100%;
+  min-height: 3rem;
+  padding: var(--space-md) var(--space-lg);
+  font-size: var(--font-size-md);
+}
+
+.note {
+  margin-top: var(--space-lg);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}

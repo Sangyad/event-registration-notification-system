@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ToastRegion } from "@/components/ui/Toast/Toast";
-import { SignOutButton } from "@/features/auth/components/SignOutButton";
+import { SignOutButton } from "@/features/auth/components/SignOutButton/SignOutButton";
 import { Role } from "@/generated/prisma/browser";
 import { auth } from "@/lib/auth";
 

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 
-import { SignInForm } from "@/features/auth/components/SignInForm";
+import { SignInForm } from "@/features/auth/components/SignInForm/SignInForm";
 
 import styles from "./page.module.css";
 
