@@ -5,40 +5,38 @@
   justify-content: center;
   padding: var(--space-2xl) var(--space-lg);
   background: var(--color-app-bg);
-}
-.card {
-  width: min(100%, 30rem);
-  padding: clamp(var(--space-2xl), 8vw, var(--space-4xl));
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface-bg);
-  box-shadow: var(--shadow-lg);
-  text-align: center;
-}
-.brandMark {
-  display: grid;
-  width: 4rem;
-  height: 4rem;
-  place-items: center;
-  margin: 0 auto var(--space-xl);
-  border-radius: var(--radius-md);
-  background: var(--color-brand-primary);
-  color: var(--color-text-inverse);
-  font-weight: var(--font-weight-bold);
-  letter-spacing: 0.08em;
-}
-.eyebrow {
-  margin: 0 auto;
-  color: var(--color-text-muted);
-  font-size: var(--font-size-sm);
-  line-height: var(--line-height-normal);
-}
-.card h1 {
-  margin-top: var(--space-md);
-  font-size: var(--font-size-3xl);
-}
-.description {
-  margin: var(--space-md) 0 var(--space-2xl);
-  color: var(--color-text-secondary);
-  line-height: var(--line-height-normal);
+
+  .card {
+    width: min(100%, 25rem);
+    padding: clamp(var(--space-2xl), 8vw, var(--space-4xl));
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-bg);
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+
+    .brandMark {
+      width: 6rem;
+      height: auto;
+      margin: 0 auto var(--space-xl);
+    }
+
+    .eyebrow {
+      margin: 0 auto;
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+      line-height: var(--line-height-normal);
+    }
+
+    h1 {
+      margin-top: var(--space-md);
+      font-size: var(--font-size-3xl);
+    }
+
+    .description {
+      margin: var(--space-md) 0 var(--space-2xl);
+      color: var(--color-text-secondary);
+      line-height: var(--line-height-normal);
+    }
+  }
 }
