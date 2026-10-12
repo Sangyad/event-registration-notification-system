@@ -80,11 +80,12 @@
     &[data-pressed] {
       scale: 0.9;
       background: var(--color-brand-accent);
+      color: var(--color-text-inverse);
     }
 
     &[data-selected] {
       background: var(--color-brand-accent);
-      color: var(--color-brand-primary);
+      color: var(--color-text-inverse);
       font-weight: var(--font-weight-medium);
     }
 

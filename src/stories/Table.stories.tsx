@@ -141,7 +141,7 @@ export const Playground: Story = {
               style={{
                 margin: 0,
                 fontSize: "0.875rem",
-                color: "#475569",
+                color: "var(--color-text-secondary)",
               }}
             >
               Selected:{" "}
@@ -215,7 +215,7 @@ export const WithSelection: Story = {
             style={{
               margin: 0,
               fontSize: "0.875rem",
-              color: "#475569",
+              color: "var(--color-text-secondary)",
             }}
           >
             Selected:{" "}
@@ -351,7 +351,7 @@ export const WithSingleSelection: Story = {
             style={{
               margin: 0,
               fontSize: "0.875rem",
-              color: "#475569",
+              color: "var(--color-text-secondary)",
             }}
           >
             Selected:{" "}
@@ -475,7 +475,7 @@ export const WithInteractive: Story = {
             style={{
               margin: 0,
               fontSize: "0.875rem",
-              color: "#475569",
+              color: "var(--color-text-secondary)",
             }}
           >
             Selected:{" "}

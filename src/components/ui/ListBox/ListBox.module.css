@@ -112,6 +112,7 @@
 
   &[data-focused] {
     background: var(--color-brand-accent);
+    color: var(--color-text-inverse);
   }
 
   &[data-selected] {

@@ -14,7 +14,7 @@ Plan: add more than one theme later
   --raw-navy-700: #0f2440;
 
   --raw-sky-100: #e0f2fe;
-  --raw-sky-300: #38bdf8;
+  --raw-sky-300: #0284c7;
   --raw-sky-500: #0369a1;
   --raw-sky-700: #075985;
 
@@ -38,8 +38,6 @@ Plan: add more than one theme later
   --raw-amber: #b7791f;
   --raw-brick: #9e4747;
   --raw-steel: #4a6e85;
-  --raw-violet: #7a5ea7;
-  --raw-teal: #3d7a89;
 
   /* --------------------------------------------- */
   /* Semantic tokens - Light mode */
@@ -64,7 +62,8 @@ Plan: add more than one theme later
   --color-brand-primary--active: var(--raw-navy-700);
 
   --color-brand-accent: var(--raw-sky-500);
-  --color-brand-accent--hover: var(--raw-sky-300);
+  /* Darkens on hover: no lighter sky passes white-text contrast. */
+  --color-brand-accent--hover: var(--raw-sky-700);
   --color-brand-accent--active: var(--raw-sky-700);
   --color-brand-accent--focus: var(--raw-sky-100);
 
