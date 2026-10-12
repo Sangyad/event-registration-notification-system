@@ -8,19 +8,19 @@ Plan: add more than one theme later
 :root {
   /* --------------------------------------------- */
   /* Primitives (raw values) */
-  --raw-black-100: #333333;
-  --raw-black-300: #1a1a1a;
-  --raw-black-500: #0b0b0b;
-  --raw-black-700: #000000;
+  --raw-navy-100: #2f5a8a;
+  --raw-navy-300: #234a78;
+  --raw-navy-500: #1a365d;
+  --raw-navy-700: #0f2440;
 
-  --raw-gold-100: #f2e2a0;
-  --raw-gold-300: #e5c556;
-  --raw-gold-500: #d4af37;
-  --raw-gold-700: #bd9422;
+  --raw-sky-100: #e0f2fe;
+  --raw-sky-300: #38bdf8;
+  --raw-sky-500: #0369a1;
+  --raw-sky-700: #075985;
 
   --raw-white: #ffffff;
-  --raw-cream: #f7f5ef;
-  --raw-sand: #f1ece0;
+  --raw-cream: #eef3f8;
+  --raw-sand: #dfe8f0;
 
   --raw-gray-50: #f9fafb;
   --raw-gray-100: #f3f4f6;
@@ -49,24 +49,24 @@ Plan: add more than one theme later
   --color-surface-bg: var(--raw-white);
   --color-surface-bg-alt: var(--raw-sand);
   --color-surface-hover: var(--raw-gray-100);
-  --color-bg-inverse: var(--raw-black-500);
-  --color-modal-overlay: rgba(28, 26, 23, var(--opacity-overlay));
+  --color-bg-inverse: var(--raw-navy-500);
+  --color-modal-overlay: rgba(15, 36, 64, var(--opacity-overlay));
 
   /* Text colors */
-  --color-text-primary: #1c1a17;
-  --color-text-secondary: #5f5a4b;
-  --color-text-muted: #8b8270;
+  --color-text-primary: #0f2440;
+  --color-text-secondary: #475569;
+  --color-text-muted: #5a6b7d;
   --color-text-inverse: var(--raw-white);
 
   /* Brand colors */
-  --color-brand-primary: var(--raw-black-500);
-  --color-brand-primary--hover: var(--raw-black-100);
-  --color-brand-primary--active: var(--raw-black-700);
+  --color-brand-primary: var(--raw-navy-500);
+  --color-brand-primary--hover: var(--raw-navy-100);
+  --color-brand-primary--active: var(--raw-navy-700);
 
-  --color-brand-accent: var(--raw-gold-500);
-  --color-brand-accent--hover: var(--raw-gold-300);
-  --color-brand-accent--active: var(--raw-gold-700);
-  --color-brand-accent--focus: var(--raw-gold-100);
+  --color-brand-accent: var(--raw-sky-500);
+  --color-brand-accent--hover: var(--raw-sky-300);
+  --color-brand-accent--active: var(--raw-sky-700);
+  --color-brand-accent--focus: var(--raw-sky-100);
 
   /* Border colors */
   --color-border-subtle: var(--raw-gray-200);
@@ -80,14 +80,6 @@ Plan: add more than one theme later
   --color-info: var(--raw-steel);
 
   --color-neutral: var(--raw-gray-500);
-
-  /* Role colors */
-  --role-dev: var(--raw-violet);
-  --role-admin: var(--raw-brick);
-  --role-branch-manager: var(--raw-teal);
-  --role-lawyer: var(--raw-sage);
-  --role-paralegal: var(--raw-amber);
-  --role-process-server: var(--raw-steel);
 
   /* --------------------------------------------- */
 
@@ -115,9 +107,8 @@ Plan: add more than one theme later
 
   /* Typography */
   --font-family-sans:
-    var(--font-roboto), Roboto, "Segoe UI", -apple-system, system-ui,
-    BlinkMacSystemFont, Oxygen, Ubuntu, Cantarell, "Open Sans",
-    "Helvetica Neue", sans-serif;
+    var(--font-roboto), Roboto, "Segoe UI", -apple-system, system-ui, BlinkMacSystemFont, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 
   /* Font sizes */
   --font-size-xs: 0.75rem;
@@ -167,9 +158,9 @@ Plan: add more than one theme later
   --icon-size-2xl: var(--space-4xl);
 
   /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(28, 26, 23, 0.06);
-  --shadow-md: 0 4px 12px rgba(28, 26, 23, 0.1);
-  --shadow-lg: 0 10px 28px rgba(28, 26, 23, 0.14);
+  --shadow-sm: 0 1px 2px rgba(15, 36, 64, 0.06);
+  --shadow-md: 0 4px 12px rgba(15, 36, 64, 0.1);
+  --shadow-lg: 0 10px 28px rgba(15, 36, 64, 0.14);
 
   /* Transitions */
   --transition-base: 180ms ease-in-out;

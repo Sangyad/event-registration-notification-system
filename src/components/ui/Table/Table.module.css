@@ -19,7 +19,7 @@
   }
 
   &[data-scrolled] .tableHeader {
-    box-shadow: 0 4px 8px rgba(28, 26, 23, 0.06);
+    box-shadow: 0 4px 8px rgba(15, 36, 64, 0.06);
   }
 }
 
