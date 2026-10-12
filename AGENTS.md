@@ -32,7 +32,6 @@ Conventions for AI coding agents working in this repo. Read this file before wri
   | `.ts` / `.tsx` / `.js` / `.jsx`                     | `pnpm format && pnpm lint && tsc --noEmit`                   |
   | `schema.prisma`                                     | `pnpm prisma format && pnpm prisma:generate && tsc --noEmit` |
   | `tsconfig.json`, `next.config.*`, `eslint.config.*` | `pnpm validate`                                              |
-  | Mix of the above                                    | Union of their commands                                      |
 
   `.ts`/`.tsx` always gets the full `format && lint && tsc` - `tsc --noEmit` checks the whole
   project graph, so it can't be scoped to one file. Run `pnpm build` too if the change touches
@@ -54,6 +53,7 @@ Conventions for AI coding agents working in this repo. Read this file before wri
 - `pnpm prisma:generate` / `pnpm prisma:validate` / `pnpm prisma:migrate` / `pnpm prisma:deploy`
 - `pnpm prisma:seed` - `tsx prisma/seed.ts`
 - `pnpm prisma:studio` - Prisma Studio
+- `just dev` / `just validate` - shortcuts for the common flows (see `justfile`)
 - `direnv allow` (keeps shell) / `nix develop -c $SHELL` - pinned devShell via `flake.nix`
 - Docker Compose for local Postgres: `docker compose up -d`
 
@@ -67,12 +67,15 @@ Conventions for AI coding agents working in this repo. Read this file before wri
   `Button as AriaButton`); extend Aria props, apply CSS modules via `clsx`, forward external
   `className`.
 - Icons: `react-icons` (subpath imports like `react-icons/fa6`).
-- Auth: NextAuth v4. Session/role helpers live under the auth feature once introduced - do not
+- Auth: NextAuth v5 (Auth.js, `next-auth@5` + `@auth/prisma-adapter`). Config at
+  `src/lib/infra/auth.ts` using the v5 structure
+  (`export const { handlers, signIn, signOut, auth } = NextAuth({...})`, Google provider,
+  Prisma adapter, database session strategy). The route handler re-exports `handlers`; client
+  code uses `next-auth/react`. Guards live in `src/lib/security/auth-guards.ts` - never
   hand-roll session checks inside actions or components.
 - Data: Prisma 7 + PostgreSQL via `@prisma/adapter-pg`. Adapter pattern:
   `new PrismaClient({ adapter: new PrismaPg({ connectionString }) })`. Generated client at
-  `src/generated/prisma/`. Once introduced, the singleton lives at `src/lib/infra/prisma.ts` and
-  Prisma config at `prisma.config.ts`.
+  `src/generated/prisma/`. Singleton at `src/lib/infra/prisma.ts`, config at `prisma.config.ts`.
 - Package Manager: pnpm with `pnpm-lock.yaml`. Never introduce another package manager or a
   competing lockfile.
 - Dev Environment: Nix flake (`flake.nix` + `flake.lock`) - `nix develop` gives the pinned
@@ -88,17 +91,18 @@ Conventions for AI coding agents working in this repo. Read this file before wri
 - Server Actions (`actions.ts`) - the primary mechanism for all data mutation and form submission.
   Every structural modification to application state must route through a Server Action.
 - `src/features/` - domain logic organized by feature (e.g. `events/`, `registrations/`,
-  `notifications/`), to be introduced as the app is built.
+  `notifications/`).
   - Each domain contains `actions.ts` (orchestration, validation, and authorization), `queries.ts`
     (Prisma read operations), and `mutations.ts` (Prisma write operations).
   - Feature-specific components live in `src/features/{domain}/components/`.
 - `src/components/ui/` - shared, domain-agnostic primitives reusable across features.
-- `src/lib/` - shared code grouped by role (`domain/`, `primitives/`, `validation/`, `hooks/`;
-  `infra/`, `security/`, `files/`, `messaging/` as those concerns arrive): e.g.
-  `primitives/date.ts` (app-timezone helpers), `validation/form-utils.ts` (schema builders),
-  `hooks/toast-utils.ts` (only sanctioned toast API), `hooks/useDebounce.ts`. New shared modules
-  go in the matching group - no new root-level files. `src/lib/` must not import from
-  `src/features/` (ESLint-enforced).
+- `src/lib/` - shared code grouped by role (`domain/`, `primitives/`, `validation/`, `hooks/`,
+  `infra/`, `security/`, `messaging/`; `files/` as that concern arrives). Key modules:
+  `infra/env.ts` (typed env accessors - never read `process.env` ad-hoc),
+  `security/auth-guards.ts` (session/role guards), `security/action-response.ts` (action
+  envelopes), `security/errors.ts` (error mapping). New shared modules go in the matching
+  group - no new root-level files. `src/lib/` must not import from `src/features/`
+  (ESLint-enforced).
 - `src/test-utils/` - test-only shared code (fixtures, auth setup), to be introduced with the
   first data-layer tests. Never imported by production code.
 - `src/styles/` - design tokens (`variables.css`: primitives → semantic tokens).
@@ -149,7 +153,6 @@ Conventions for AI coding agents working in this repo. Read this file before wri
 ## 6. Components
 
 - Always scan and use existing components from `components/` first.
-- Scan `src/lib/` for existing utilities before creating new types/functions to avoid duplication.
 - Interactive/browser API components: start with `"use client"`.
 - Co-locate in `src/components/{category}/{ComponentName}/` - component, CSS module.
 - Co-locate feature-specific components in `src/features/{domain}/components/`. Only put truly
@@ -205,7 +208,8 @@ Conventions for AI coding agents working in this repo. Read this file before wri
   (`requiredText`, `optionalText`, `positiveNumber`, `requiredEnum`, `emailText`) encode these
   rules - use them instead of ad-hoc chains.
 - Strict parameter assurances: validate all structural parameters meticulously. Ensure IDs call
-  `.uuid()` or `.cuid()`, and enforce strictly defined sets using `z.enum(...)` over generated
+  `.uuid()` for UUID ids or a CUID-format regex for Prisma `cuid()` ids (`z.cuid()` itself is
+  deprecated - do not use it), and enforce strictly defined sets using `z.enum(...)` over generated
   enums. Never accept raw string inputs to cast them inside the function body via `as`.
 - Never trust client-supplied roles, ownership, or permissions. UI checks are not security
   boundaries - authenticate and authorize every protected server read/write server-side.
@@ -217,8 +221,8 @@ Conventions for AI coding agents working in this repo. Read this file before wri
   failures - throw for unrecoverable errors. No wrapper needed.
 - Write actions (create, update, delete): wrap execution in try-catch and return
   `Promise<ActionStatusResponse>` (use `ActionDataResponse<T>` when returning created/updated
-  data alongside the status). The shared envelope types/helpers live in `src/lib/security/` once
-  introduced; until then, `src/lib/hooks/toast-utils.ts` defines the minimal envelope. This lets
+  data alongside the status). The shared envelope types/helpers live in `src/lib/security/`
+  (`action-response.ts`, alongside the error mapper in `security/errors.ts`). This lets
   the client display inline error messages (toasts) without navigating away.
 - Never allow raw server exceptions to leak to the client. For writes, catch and return structured
   errors; for reads, the framework error boundary is sufficient. Never send stack traces, Prisma
@@ -227,9 +231,8 @@ Conventions for AI coding agents working in this repo. Read this file before wri
 ### 8.3 Auth guards
 
 - Protect every action with a centralized guard at the very top of the execution flow (verified
-  session first, then authorization). There is no non-throwing variant concept - guards throw
-  typed errors and the action's catch maps them to envelopes. Do not write inline, ad-hoc session
-  verification logic inside individual actions.
+  session first, then authorization). Guards throw typed errors and the action's catch maps them
+  to envelopes. Do not write inline, ad-hoc session verification logic inside individual actions.
 - Client-side permission checks are presentation-only (show/hide coarse UI like tabs or Add
   buttons). Always render per-record action buttons and surface denials via the toast helpers
   (`toastDenied()`, `toastActionError`) so users see why an action failed rather than having
@@ -251,8 +254,6 @@ Conventions for AI coding agents working in this repo. Read this file before wri
   interaction). Keep the submit button enabled so RAC surfaces inline errors on submit. Define
   user-facing validation messages in the Zod schemas via the shared builders - never surface raw
   Zod messages like "Invalid input: expected string, received undefined".
-- Provide accessible validation and submission/error states; prevent duplicate submissions where
-  needed.
 
 ## 9. Error Handling & Logging
 
@@ -260,14 +261,15 @@ Conventions for AI coding agents working in this repo. Read this file before wri
 
 - Write actions never return raw string errors. Failures use `ActionStatusResponse.error = { code,
 title, description }`. `description` is mandatory - every user-facing failure explains what
-  happened and what to do next. Prefer factory presets from `src/lib/security/` once introduced;
-  hand-rolled `{ success: false, error: ... }` literals in actions are banned.
+  happened and what to do next. Prefer factory presets from `src/lib/security/`
+  (`action-response.ts`); hand-rolled `{ success: false, error: ... }` literals in actions
+  are banned.
 - Reads remain throwing; only write actions return envelopes.
 
 ### 9.2 Catch path and logging
 
-- Single catch path: route caught exceptions through one shared mapper (to be placed in
-  `src/lib/security/` alongside the envelope factories). It classifies known errors into presets,
+- Single catch path: route caught exceptions through one shared mapper (`toActionResponse`
+  in `src/lib/security/errors.ts`, alongside the envelope factories). It classifies known errors into presets,
   logs unclassified causes via a server logger, and returns a sanitized unknown envelope. Bare
   `catch {}` that discards the error is banned.
 - Log/client split: full error details stay in server logs; the client only ever receives the
@@ -285,9 +287,6 @@ title, description }`. `description` is mandatory - every user-facing failure ex
 
 ## 10. Async
 
-- Default to `async`/`await` with `try...catch` for asynchronous code. Preserve or use
-  `.then()/.catch()` only when it is the idiomatic, clearer, or required approach for the specific
-  code pattern.
 - Never let a promise rejection go unhandled. In client components, surface failures through the
   shared toast helpers in `src/lib/hooks/toast-utils.ts` (`toastError`, `toastActionError`, etc.) or
   appropriate error UI. In Server Actions, follow the Action Response Convention (§8.2) - catch and
@@ -397,17 +396,13 @@ fields, or reshaping the data.
 
 ## 13. General
 
-- Idiomatic, modular code is the top priority in this project, not a collection of hacks and
-  workarounds.
-- Prefer readability over cleverness; if a compact expression requires mental parsing, write it as
-  straightforward sequential code instead.
 - Named exports only - no default exports, except for Next.js special files (`page.tsx`,
   `layout.tsx`, `error.tsx`, `global-error.tsx`, `not-found.tsx`, `loading.tsx`, `route.tsx` etc.)
   which require a default export. Use inline `export default function` for these files.
 - PascalCase components/types; camelCase variables/functions/files (component dirs are PascalCase).
 - No inline `//` comments unless explaining a non-obvious decision. TSDoc on `src/lib/` helpers is
   the explicit exception (see §14).
-- Prisma schema (once introduced): `snake_case` fields, `PascalCase` models/enums.
+- Prisma schema: `snake_case` fields, `PascalCase` models/enums.
 - Keep credentials and server-only environment variables out of client bundles. Never hardcode or
   commit real secrets; validate required environment variables at an appropriate boundary
   (`secrets/` holds local secret material and is git-ignored).

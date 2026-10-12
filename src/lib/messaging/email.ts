@@ -1,13 +1,13 @@
 import nodemailer, { type Transporter } from "nodemailer";
 
-import { getOptionalInteger, getRequiredEnvVar } from "@/lib/infra/env";
+import { getOptionalEnvVar, getOptionalInteger, getRequiredEnvVar } from "@/lib/infra/env";
 
 let transporter: Transporter | undefined;
 
 function getTransporter(): Transporter {
   if (!transporter) {
-    const user = process.env.SMTP_USER?.trim();
-    const pass = process.env.SMTP_PASS?.trim();
+    const user = getOptionalEnvVar("SMTP_USER", "");
+    const pass = getOptionalEnvVar("SMTP_PASS", "");
     transporter = nodemailer.createTransport({
       host: getRequiredEnvVar("SMTP_HOST"),
       port: getOptionalInteger("SMTP_PORT", 587),
@@ -25,8 +25,12 @@ export interface SendEmailPayload {
 }
 
 export async function sendEmail(payload: SendEmailPayload): Promise<void> {
+  const sender =
+    getOptionalEnvVar("SMTP_FROM", "") ||
+    getOptionalEnvVar("SMTP_USER", "") ||
+    "no-reply@localhost";
   await getTransporter().sendMail({
-    from: process.env.SMTP_FROM ?? getRequiredEnvVar("SMTP_USER"),
+    from: sender,
     to: payload.to,
     subject: payload.subject,
     html: payload.html,

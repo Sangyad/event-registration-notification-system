@@ -1,5 +1,5 @@
 import { Role } from "@/generated/prisma/browser";
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/infra/auth";
 import { DeactivatedError, ForbiddenError, UnauthorizedError } from "@/lib/security/errors";
 import { can, type Permission } from "@/lib/security/rbac";
 
@@ -22,7 +22,7 @@ export async function requireAuth(): Promise<AuthenticatedUser> {
     email: user.email,
     name: user.name,
     role: user.role,
-    isActive: user.isActive !== false,
+    isActive: user.isActive,
     clubId: user.clubId ?? null,
   };
 }

@@ -5,7 +5,7 @@ import { FaBell, FaHouse, FaPaperPlane, FaRightFromBracket, FaUsers } from "reac
 import { ToastRegion } from "@/components/ui/Toast/Toast";
 import { SignOutButton } from "@/features/auth/components/SignOutButton/SignOutButton";
 import { Role } from "@/generated/prisma/browser";
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/infra/auth";
 
 import styles from "./layout.module.css";
 

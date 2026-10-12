@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/infra/auth";
 
 export default async function HomePage() {
   const session = await auth();

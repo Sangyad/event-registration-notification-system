@@ -1,5 +1,7 @@
 import { CalendarDate, Time, toCalendarDateTime } from "@internationalized/date";
 
+import { getOptionalEnvVar } from "@/lib/infra/env";
+
 /**
  * Date and time conversion/formatting helpers built on `@internationalized/date`.
  *
@@ -72,8 +74,13 @@ function resolveTimeZone(value: string | undefined, source: string): string | un
  * @returns An IANA timezone identifier (e.g. `"Asia/Manila"`).
  */
 export function getAppTimeZone(): string {
-  const value =
-    typeof window === "undefined" ? process.env.APP_TIMEZONE : process.env.NEXT_PUBLIC_APP_TIMEZONE;
+  // Server reads go through the shared helper; the browser branch keeps a
+  // static `process.env.NEXT_PUBLIC_*` member so Next.js can inline it.
+  const raw =
+    typeof window === "undefined"
+      ? getOptionalEnvVar("APP_TIMEZONE", "")
+      : (process.env.NEXT_PUBLIC_APP_TIMEZONE ?? "");
+  const value = raw.trim() ? raw.trim() : undefined;
   return resolveTimeZone(value, "APP_TIMEZONE") ?? "Asia/Manila";
 }
 
