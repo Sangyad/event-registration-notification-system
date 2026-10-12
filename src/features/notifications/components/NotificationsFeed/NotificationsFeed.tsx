@@ -1,19 +1,39 @@
 "use client";
 
 import { useState } from "react";
+import { FaPlus } from "react-icons/fa6";
 
-import { markNotificationReadAction } from "@/features/notifications/actions";
+import { Button } from "@/components/ui/Button/Button";
+import {
+  getNotificationsAction,
+  markNotificationReadAction,
+} from "@/features/notifications/actions";
+import { SendNotificationModal } from "@/features/notifications/components/SendNotificationModal/SendNotificationModal";
 import type { NotificationRow } from "@/features/notifications/queries";
-import { toastActionError } from "@/lib/hooks/toast-utils";
+import { toastActionError, toastError } from "@/lib/hooks/toast-utils";
 
 import styles from "./NotificationsFeed.module.css";
 
 interface NotificationsFeedProps {
   initialNotifications: NotificationRow[];
+  canCompose: boolean;
 }
 
-export function NotificationsFeed({ initialNotifications }: NotificationsFeedProps) {
+export function NotificationsFeed({ initialNotifications, canCompose }: NotificationsFeedProps) {
   const [notifications, setNotifications] = useState(initialNotifications);
+  const [isComposeOpen, setIsComposeOpen] = useState(false);
+
+  const refresh = async () => {
+    try {
+      setNotifications(await getNotificationsAction());
+    } catch {
+      toastError(
+        "Failed to refresh notifications",
+        "We couldn't retrieve your notifications. Please try again.",
+      );
+    }
+  };
+
   const markRead = async (id: string) => {
     const response = await markNotificationReadAction({ notificationId: id });
     if (!response.success) {
@@ -27,8 +47,18 @@ export function NotificationsFeed({ initialNotifications }: NotificationsFeedPro
 
   return (
     <div className={styles.page}>
-      <p className={styles.eyebrow}>Updates</p>
-      <h1>Notifications</h1>
+      <div className={styles.heading}>
+        <div>
+          <p className={styles.eyebrow}>Updates</p>
+          <h1>Notifications</h1>
+        </div>
+        {canCompose && (
+          <Button onPress={() => setIsComposeOpen(true)}>
+            <FaPlus aria-hidden="true" />
+            Send notification
+          </Button>
+        )}
+      </div>
       {notifications.length === 0 ? (
         <p className={styles.empty}>You do not have any notifications yet.</p>
       ) : (
@@ -55,6 +85,13 @@ export function NotificationsFeed({ initialNotifications }: NotificationsFeedPro
             </button>
           ))}
         </div>
+      )}
+      {canCompose && (
+        <SendNotificationModal
+          isOpen={isComposeOpen}
+          onOpenChange={setIsComposeOpen}
+          onSuccess={() => void refresh()}
+        />
       )}
     </div>
   );

@@ -13,6 +13,18 @@
   margin-top: var(--space-sm);
   font-size: var(--font-size-3xl);
 }
+.heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-lg);
+}
+@media (max-width: 47.99rem) {
+  .heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
 .empty {
   margin-top: var(--space-3xl);
   color: var(--color-text-secondary);

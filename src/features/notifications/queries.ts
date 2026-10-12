@@ -39,6 +39,36 @@ export async function getNotificationsForUser(
   }));
 }
 
+export async function getUnreadNotificationsForUser(
+  userId: string,
+  clubId: string | null,
+  limit = 10,
+): Promise<NotificationRow[]> {
+  const rows = await prisma.notification.findMany({
+    where: {
+      OR: [
+        { audience: NotificationAudience.ALL },
+        ...(clubId ? [{ audience: NotificationAudience.CLUB, clubId }] : []),
+      ],
+      reads: { none: { userId } },
+    },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    take: limit,
+    include: {
+      club: { select: { name: true } },
+    },
+  });
+  return rows.map((row) => ({
+    id: row.id,
+    title: row.title,
+    body: row.body,
+    audience: row.audience,
+    clubName: row.club?.name ?? null,
+    createdAt: row.createdAt,
+    isRead: false,
+  }));
+}
+
 export async function getUnreadNotificationCount(
   userId: string,
   clubId: string | null,

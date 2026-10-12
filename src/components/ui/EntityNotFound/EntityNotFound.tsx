@@ -19,7 +19,7 @@ export function EntityNotFound({ entityName, className }: EntityNotFoundProps) {
           The {entityName.toLowerCase()} you are looking for does not exist or may have been
           deleted.
         </p>
-        <Link href="/dashboard">Go to Dashboard</Link>
+        <Link href="/notifications">Go to Notifications</Link>
       </div>
     </main>
   );

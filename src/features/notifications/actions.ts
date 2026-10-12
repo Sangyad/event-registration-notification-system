@@ -10,6 +10,7 @@ import {
   getNotificationRecipients,
   getNotificationsForUser,
   getUnreadNotificationCount,
+  getUnreadNotificationsForUser,
 } from "./queries";
 import { MarkReadSchema, SendNotificationSchema } from "./schemas";
 
@@ -23,6 +24,13 @@ export async function getNotificationsAction(): Promise<
 export async function getUnreadNotificationCountAction(): Promise<number> {
   const session = await requireAuth();
   return getUnreadNotificationCount(session.id, session.clubId);
+}
+
+export async function getUnreadNotificationsAction(): Promise<
+  Awaited<ReturnType<typeof getUnreadNotificationsForUser>>
+> {
+  const session = await requireAuth();
+  return getUnreadNotificationsForUser(session.id, session.clubId);
 }
 
 export async function markNotificationReadAction(payload: unknown): Promise<ActionStatusResponse> {

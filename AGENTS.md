@@ -120,8 +120,7 @@ Conventions for AI coding agents working in this repo. Read this file before wri
   (single-use spacing, border-radius, etc.) - creating a variable for a value used only once is
   overengineering. Extract to `variables.css` when the same value appears twice or more.
 - Theme: navy primary scale (`--raw-navy-*`), sky accent scale (`--raw-sky-*`), cool-gray
-  surfaces. The `--role-*` law-firm tokens were deleted; introduce event-domain role tokens only
-  when the domain needs them.
+  surfaces.
 
 ### 5.2 Contrast rule (text on fills)
 

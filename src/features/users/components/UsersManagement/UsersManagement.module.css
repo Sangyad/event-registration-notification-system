@@ -53,11 +53,9 @@
   flex-wrap: wrap;
   gap: var(--space-sm);
 }
-.modalForm {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-lg);
-  padding-top: var(--space-lg);
+.actionIcon {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
 }
 @media (max-width: 47.99rem) {
   .heading {

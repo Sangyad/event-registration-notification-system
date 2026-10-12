@@ -1,28 +1,29 @@
 "use client";
 
 import { useState } from "react";
+import { FaBan, FaPencil, FaUserCheck } from "react-icons/fa6";
 
 import { Button } from "@/components/ui/Button/Button";
-import { Modal } from "@/components/ui/Modal/Modal";
-import { Select, SelectItem } from "@/components/ui/Select/Select";
 import { StatusBadge } from "@/components/ui/StatusBadge/StatusBadge";
 import { TextField } from "@/components/ui/TextField/TextField";
+import { Tooltip, TooltipTrigger } from "@/components/ui/Tooltip/Tooltip";
 import {
-  addPendingUserAction,
   cancelPendingUserAction,
   getUserManagementRowsAction,
   setActiveAction,
-  updateRoleAction,
 } from "@/features/users/actions";
+import { AddUserModal } from "@/features/users/components/AddUserModal/AddUserModal";
+import { EditRoleModal } from "@/features/users/components/EditRoleModal/EditRoleModal";
 import type { UserManagementRow } from "@/features/users/queries";
 import { Role } from "@/generated/prisma/browser";
-import { toastActionError, toastSuccess } from "@/lib/hooks/toast-utils";
+import { toastActionError, toastError, toastSuccess } from "@/lib/hooks/toast-utils";
 
 import styles from "./UsersManagement.module.css";
 
 interface UsersManagementProps {
   initialRows: UserManagementRow[];
 }
+
 const roles = [Role.STUDENT, Role.OFFICER, Role.ADMIN];
 type AssignableRole = (typeof roles)[number];
 
@@ -31,12 +32,20 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
   const [search, setSearch] = useState("");
   const [addOpen, setAddOpen] = useState(false);
   const [roleRow, setRoleRow] = useState<UserManagementRow | null>(null);
-  const [role, setRole] = useState<AssignableRole>(Role.STUDENT);
 
-  async function refresh(value: string) {
-    setSearch(value);
-    setRows(await getUserManagementRowsAction(value));
+  async function refresh(value?: string) {
+    const query = value ?? search;
+    setSearch(query);
+    try {
+      setRows(await getUserManagementRowsAction(query));
+    } catch {
+      toastError(
+        "Failed to refresh users",
+        "We couldn't retrieve the user list. Please try again.",
+      );
+    }
   }
+
   async function run(
     action: Promise<{
       success: boolean;
@@ -48,14 +57,8 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
     if (!response.success) toastActionError(response, operation);
     else {
       toastSuccess("Changes saved", "The user management list has been updated.");
-      setRows(await getUserManagementRowsAction(search));
+      await refresh();
     }
-  }
-  async function submitAdd(event: React.SyntheticEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    await run(addPendingUserAction({ email: data.get("email"), role }), "add user");
-    setAddOpen(false);
   }
 
   return (
@@ -112,28 +115,35 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
                     </Button>
                   ) : (
                     <>
-                      <Button
-                        variant="ghost"
-                        onPress={() => {
-                          setRoleRow(row);
-                          if (roles.includes(row.role as AssignableRole)) {
-                            setRole(row.role as AssignableRole);
+                      <TooltipTrigger>
+                        <Button
+                          variant="ghost"
+                          aria-label="Edit role"
+                          onPress={() => setRoleRow(row)}
+                        >
+                          <FaPencil aria-hidden="true" className={styles.actionIcon} />
+                        </Button>
+                        <Tooltip>Edit role</Tooltip>
+                      </TooltipTrigger>
+                      <TooltipTrigger>
+                        <Button
+                          variant="ghost"
+                          aria-label={row.isActive ? "Deactivate user" : "Reactivate user"}
+                          onPress={() =>
+                            void run(
+                              setActiveAction({ userId: row.id, isActive: !row.isActive }),
+                              "update user status",
+                            )
                           }
-                        }}
-                      >
-                        Edit role
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        onPress={() =>
-                          void run(
-                            setActiveAction({ userId: row.id, isActive: !row.isActive }),
-                            "update user status",
-                          )
-                        }
-                      >
-                        {row.isActive ? "Deactivate" : "Reactivate"}
-                      </Button>
+                        >
+                          {row.isActive ? (
+                            <FaBan aria-hidden="true" className={styles.actionIcon} />
+                          ) : (
+                            <FaUserCheck aria-hidden="true" className={styles.actionIcon} />
+                          )}
+                        </Button>
+                        <Tooltip>{row.isActive ? "Deactivate" : "Reactivate"}</Tooltip>
+                      </TooltipTrigger>
                     </>
                   )}
                 </td>
@@ -142,61 +152,18 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
           </tbody>
         </table>
       </div>
-      {addOpen && (
-        <Modal title="Add user" isOpen onOpenChange={setAddOpen}>
-          <form className={styles.modalForm} onSubmit={(event) => void submitAdd(event)}>
-            <TextField name="email" label="School email" type="email" isRequired />
-            <Select
-              label="Role"
-              value={role}
-              onChange={(value) => {
-                const selectedRole = String(value) as AssignableRole;
-                if (roles.includes(selectedRole)) setRole(selectedRole);
-              }}
-            >
-              {roles.map((item) => (
-                <SelectItem key={item} id={item}>
-                  {item}
-                </SelectItem>
-              ))}
-            </Select>
-            <Button type="submit">Add user</Button>
-          </form>
-        </Modal>
-      )}
-      {roleRow && (
-        <Modal
-          title={`Edit role for ${roleRow.email}`}
+      <AddUserModal isOpen={addOpen} onOpenChange={setAddOpen} onSuccess={() => void refresh()} />
+      {roleRow && roles.includes(roleRow.role as AssignableRole) && (
+        <EditRoleModal
+          userId={roleRow.id}
+          userEmail={roleRow.email}
+          initialRole={roleRow.role as AssignableRole}
           isOpen
           onOpenChange={(open) => {
             if (!open) setRoleRow(null);
           }}
-        >
-          <div className={styles.modalForm}>
-            <Select
-              label="Role"
-              value={role}
-              onChange={(value) => {
-                const selectedRole = String(value) as AssignableRole;
-                if (roles.includes(selectedRole)) setRole(selectedRole);
-              }}
-            >
-              {roles.map((item) => (
-                <SelectItem key={item} id={item}>
-                  {item}
-                </SelectItem>
-              ))}
-            </Select>
-            <Button
-              onPress={() => {
-                void run(updateRoleAction({ userId: roleRow.id, role }), "update user role");
-                setRoleRow(null);
-              }}
-            >
-              Save role
-            </Button>
-          </div>
-        </Modal>
+          onSuccess={() => void refresh()}
+        />
       )}
     </div>
   );

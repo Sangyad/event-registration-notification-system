@@ -1,58 +1,65 @@
-import Link from "next/link";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { FaBell, FaHouse, FaPaperPlane, FaRightFromBracket, FaUsers } from "react-icons/fa6";
 
+import { Header } from "@/components/layout/Header/Header";
+import { Sidebar } from "@/components/layout/Sidebar/Sidebar";
+import { SidebarProvider } from "@/components/layout/Sidebar/sidebar-context";
 import { ToastRegion } from "@/components/ui/Toast/Toast";
-import { SignOutButton } from "@/features/auth/components/SignOutButton/SignOutButton";
-import { Role } from "@/generated/prisma/browser";
+import { NavigationProvider } from "@/components/ui/TopProgressBar/navigation-context";
+import { TopProgressBar } from "@/components/ui/TopProgressBar/TopProgressBar";
+import { getUnreadNotificationCount } from "@/features/notifications/queries";
 import { auth } from "@/lib/infra/auth";
 
 import styles from "./layout.module.css";
 
-export default async function AppLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+interface AppLayoutProps {
+  children: React.ReactNode;
+}
+
+export default async function AppLayout({ children }: AppLayoutProps) {
   const session = await auth();
-  if (!session?.user) redirect("/sign-in");
-  const canSend = session.user.role !== Role.STUDENT;
-  const canManage = session.user.role === Role.ADMIN || session.user.role === Role.DEV;
+  if (!session?.user) {
+    redirect("/sign-in");
+  }
+  if (session.user.isActive === false) {
+    redirect("/deactivated?reason=deactivated");
+  }
+
+  const cookieStore = await cookies();
+  const initialCollapsed = cookieStore.get("sidebar-collapsed")?.value === "true";
+
+  let initialUnreadCount = 0;
+  if (session?.user?.id) {
+    try {
+      initialUnreadCount = await getUnreadNotificationCount(session.user.id, session.user.clubId);
+    } catch {
+      initialUnreadCount = 0;
+    }
+  }
 
   return (
     <div className={styles.layout}>
-      <header className={styles.header}>
-        <Link href="/dashboard" className={styles.logo}>
-          ERNS
-        </Link>
-        <div className={styles.account}>
-          <span>{session.user.name}</span>
-          <span className={styles.role}>{session.user.role}</span>
-          <SignOutButton icon={<FaRightFromBracket aria-hidden="true" />} />
-        </div>
-      </header>
-      <div className={styles.body}>
-        <nav className={styles.nav} aria-label="Main navigation">
-          <Link href="/dashboard">
-            <FaHouse aria-hidden="true" />
-            Dashboard
-          </Link>
-          <Link href="/notifications">
-            <FaBell aria-hidden="true" />
-            Notifications
-          </Link>
-          {canSend && (
-            <Link href="/officer/notifications/new">
-              <FaPaperPlane aria-hidden="true" />
-              Send notification
-            </Link>
-          )}
-          {canManage && (
-            <Link href="/admin/users">
-              <FaUsers aria-hidden="true" />
-              Manage users
-            </Link>
-          )}
-        </nav>
-        <main className={styles.content}>{children}</main>
-      </div>
-      <ToastRegion />
+      <NavigationProvider>
+        <TopProgressBar />
+        <SidebarProvider>
+          <Sidebar
+            initialCollapsed={initialCollapsed}
+            userName={session?.user?.name}
+            userRole={session?.user?.role}
+            userImage={session?.user?.image}
+          />
+          <div className={styles.main}>
+            <Header
+              userImage={session?.user?.image ?? null}
+              userName={session?.user?.name}
+              userRole={session?.user?.role}
+              initialUnreadCount={initialUnreadCount}
+            />
+            <main className={styles.content}>{children}</main>
+          </div>
+        </SidebarProvider>
+        <ToastRegion />
+      </NavigationProvider>
     </div>
   );
 }

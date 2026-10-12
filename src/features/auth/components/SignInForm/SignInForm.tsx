@@ -12,7 +12,7 @@ export function SignInForm() {
     <div className={styles.form}>
       <Button
         className={styles.button}
-        onPress={() => void signIn("google", { callbackUrl: "/dashboard" })}
+        onPress={() => void signIn("google", { callbackUrl: "/notifications" })}
       >
         <FaGoogle aria-hidden="true" className={styles.icon} />
         Sign in with your school account
