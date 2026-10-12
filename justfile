@@ -30,27 +30,3 @@ db-setup:
 [group('Development')]
 dev: dev-up db-setup
     pnpm dev
-
-# Run formatting.
-[group('Checks')]
-format:
-    pnpm format
-
-# Run ESLint.
-[group('Checks')]
-lint:
-    pnpm lint
-
-# Run TypeScript checking.
-[group('Checks')]
-typecheck:
-    pnpm exec tsc --noEmit
-
-# Build the application.
-[group('Checks')]
-build:
-    pnpm build
-
-# Run the standard project checks.
-[group('Checks')]
-validate: format lint typecheck build
