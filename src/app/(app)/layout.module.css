@@ -46,9 +46,16 @@
   background: var(--color-surface-bg);
 }
 .nav a {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
   padding: var(--space-md);
   border-radius: var(--radius-sm);
   color: var(--color-text-secondary);
+}
+.nav a svg {
+  width: var(--icon-size-md);
+  color: var(--color-brand-accent);
 }
 .nav a:hover,
 .nav a:focus-visible {

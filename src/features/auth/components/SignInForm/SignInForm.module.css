@@ -11,6 +11,10 @@
   font-size: var(--font-size-md);
 }
 
+.icon {
+  font-size: var(--icon-size-md);
+}
+
 .note {
   margin-top: var(--space-lg);
   color: var(--color-text-muted);

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { FaBell, FaHouse, FaPaperPlane, FaRightFromBracket, FaUsers } from "react-icons/fa6";
 
 import { ToastRegion } from "@/components/ui/Toast/Toast";
 import { SignOutButton } from "@/features/auth/components/SignOutButton/SignOutButton";
@@ -23,15 +24,31 @@ export default async function AppLayout({ children }: Readonly<{ children: React
         <div className={styles.account}>
           <span>{session.user.name}</span>
           <span className={styles.role}>{session.user.role}</span>
-          <SignOutButton />
+          <SignOutButton icon={<FaRightFromBracket aria-hidden="true" />} />
         </div>
       </header>
       <div className={styles.body}>
         <nav className={styles.nav} aria-label="Main navigation">
-          <Link href="/dashboard">Dashboard</Link>
-          <Link href="/notifications">Notifications</Link>
-          {canSend && <Link href="/officer/notifications/new">Send notification</Link>}
-          {canManage && <Link href="/admin/users">Manage users</Link>}
+          <Link href="/dashboard">
+            <FaHouse aria-hidden="true" />
+            Dashboard
+          </Link>
+          <Link href="/notifications">
+            <FaBell aria-hidden="true" />
+            Notifications
+          </Link>
+          {canSend && (
+            <Link href="/officer/notifications/new">
+              <FaPaperPlane aria-hidden="true" />
+              Send notification
+            </Link>
+          )}
+          {canManage && (
+            <Link href="/admin/users">
+              <FaUsers aria-hidden="true" />
+              Manage users
+            </Link>
+          )}
         </nav>
         <main className={styles.content}>{children}</main>
       </div>
