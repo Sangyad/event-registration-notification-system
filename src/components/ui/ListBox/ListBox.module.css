@@ -60,10 +60,12 @@
   }
 
   [slot="label"] {
+    color: inherit;
     font-weight: var(--font-weight-medium);
   }
 
   [slot="description"] {
+    color: inherit;
     font-size: var(--font-size-xs);
   }
 }
@@ -130,10 +132,12 @@
   }
 
   [slot="label"] {
+    color: inherit;
     font-weight: var(--font-weight-medium);
   }
 
   [slot="description"] {
+    color: inherit;
     font-size: var(--font-size-xs);
   }
 
