@@ -1,6 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
+    restart: no
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -12,6 +13,7 @@ services:
 
   mailpit:
     image: axllent/mailpit:latest
+    restart: no
     ports:
       - "1025:1025"
       - "8025:8025"
