@@ -51,13 +51,13 @@
     .title {
       font-size: var(--font-size-lg);
       font-weight: var(--font-weight-bold);
+      color: var(--color-text-inverse);
     }
 
     .desc {
       font-size: var(--font-size-md);
       font-weight: var(--font-weight-semi-bold);
-      color: var(--color-brand-accent);
-      max-height: 2rem;
+      color: var(--color-text-inverse);
       overflow: hidden;
     }
   }

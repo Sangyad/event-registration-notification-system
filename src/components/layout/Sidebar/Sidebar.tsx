@@ -92,7 +92,7 @@ export function Sidebar({ initialCollapsed = false, userName, userRole, userImag
           </Button>
         </div>
         <div className={styles.textContainer}>
-          <h1 className={styles.title}>Event Registration</h1>
+          <h1 className={styles.title}>Event Registration &amp;</h1>
           <h1 className={styles.desc}>Notification System</h1>
         </div>
         <nav className={styles.navContainer}>
