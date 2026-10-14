@@ -16,27 +16,40 @@
     text-align: center;
 
     .brandMark {
-      width: 6rem;
+      width: 8rem;
       height: auto;
       margin: 0 auto var(--space-xl);
     }
 
-    .eyebrow {
-      margin: 0 auto;
-      color: var(--color-text-muted);
-      font-size: var(--font-size-sm);
+    .title {
+      color: var(--color-text-secondary);
+      font-weight: var(--font-weight-black);
+      font-size: var(--font-size-md);
+      line-height: var(--line-height-normal);
+    }
+
+    .greetings {
+      font-size: var(--font-size-2xl);
       line-height: var(--line-height-normal);
     }
 
     h1 {
+      color: var(--color-text-muted);
       margin-top: var(--space-md);
       font-size: var(--font-size-3xl);
     }
 
     .description {
       margin: var(--space-md) 0 var(--space-2xl);
-      color: var(--color-text-secondary);
+      color: var(--color-text-muted);
       line-height: var(--line-height-normal);
+      font-size: var(--font-size-sm);
+    }
+
+    .note {
+      margin-top: var(--space-lg);
+      color: var(--color-text-muted);
+      font-size: var(--font-size-xs);
     }
   }
 }

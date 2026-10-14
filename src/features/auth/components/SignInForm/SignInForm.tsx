@@ -15,9 +15,8 @@ export function SignInForm() {
         onPress={() => void signIn("google", { callbackUrl: "/notifications" })}
       >
         <FaGoogle aria-hidden="true" className={styles.icon} />
-        Sign in with your school account
+        Sign in with Google
       </Button>
-      <p className={styles.note}>Only @acdeducation.com accounts are accepted.</p>
     </div>
   );
 }

@@ -12,17 +12,18 @@ export default function SignInPage() {
         <Image
           src="/school-logo.svg"
           alt="School logo"
-          width={96}
-          height={96}
+          width={100}
+          height={100}
           className={styles.brandMark}
           priority
         />
-        <p className={styles.eyebrow}>Event Registration &amp; Notification System</p>
-        <h1>Welcome back</h1>
+        <p className={styles.title}>Event Registration &amp; Notification System</p>
+        <h1 className={styles.greetings}>Welcome back</h1>
         <p className={styles.description}>Sign in with your school account to continue.</p>
         <Suspense fallback={null}>
           <SignInForm />
         </Suspense>
+        <p className={styles.note}>Only @acdeducation.com accounts are accepted.</p>
       </section>
     </main>
   );
