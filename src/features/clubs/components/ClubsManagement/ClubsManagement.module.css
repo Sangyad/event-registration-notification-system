@@ -62,6 +62,11 @@
         letter-spacing: 0.04em;
       }
 
+      .empty {
+        text-align: center;
+        color: var(--color-text-muted);
+      }
+
       .actions {
         display: flex;
         flex-wrap: wrap;

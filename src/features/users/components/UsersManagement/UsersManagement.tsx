@@ -1,13 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaBan, FaPencil, FaPeopleGroup, FaUserCheck } from "react-icons/fa6";
 
 import { Button } from "@/components/ui/Button/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog/ConfirmDialog";
+import { ListToolbar } from "@/components/ui/ListToolbar/ListToolbar";
 import { StatusBadge } from "@/components/ui/StatusBadge/StatusBadge";
-import { TextField } from "@/components/ui/TextField/TextField";
+import type { FilterDefinition } from "@/components/ui/TableFilter/TableFilter";
 import { Tooltip, TooltipTrigger } from "@/components/ui/Tooltip/Tooltip";
 import { formatClubLabel } from "@/features/clubs/constants";
 import {
@@ -18,9 +19,12 @@ import {
 import { AddUserModal } from "@/features/users/components/AddUserModal/AddUserModal";
 import { AssignClubModal } from "@/features/users/components/AssignClubModal/AssignClubModal";
 import { EditRoleModal } from "@/features/users/components/EditRoleModal/EditRoleModal";
+import { roleLabels } from "@/features/users/constants";
 import type { UserManagementRow } from "@/features/users/queries";
 import { Role } from "@/generated/prisma/browser";
 import { toastActionError, toastError, toastSuccess } from "@/lib/hooks/toast-utils";
+import { useDebounce } from "@/lib/hooks/useDebounce";
+import type { FilterValues } from "@/lib/primitives/types";
 
 import styles from "./UsersManagement.module.css";
 
@@ -31,28 +35,68 @@ interface UsersManagementProps {
 const roles = [Role.STUDENT, Role.OFFICER, Role.ADMIN];
 type AssignableRole = (typeof roles)[number];
 
+const userFilters: FilterDefinition[] = [
+  {
+    key: "role",
+    label: "Role",
+    options: Object.values(Role).map((role) => ({ value: role, label: roleLabels[role] })),
+  },
+  {
+    key: "status",
+    label: "Status",
+    options: [
+      { value: "active", label: "Active" },
+      { value: "inactive", label: "Inactive" },
+      { value: "pending", label: "Pending" },
+    ],
+  },
+];
+
 export function UsersManagement({ initialRows }: UsersManagementProps) {
   const router = useRouter();
   const [rows, setRows] = useState(initialRows);
   const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState<FilterValues>({});
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [addOpen, setAddOpen] = useState(false);
   const [roleRow, setRoleRow] = useState<UserManagementRow | null>(null);
   const [clubRow, setClubRow] = useState<UserManagementRow | null>(null);
   const [statusRow, setStatusRow] = useState<UserManagementRow | null>(null);
   const [invitationRow, setInvitationRow] = useState<UserManagementRow | null>(null);
 
-  async function refresh(value?: string) {
-    const query = value ?? search;
-    setSearch(query);
-    try {
-      setRows(await getUserManagementRowsAction(query));
-    } catch {
-      toastError(
-        "Failed to refresh users",
-        "We couldn't retrieve the user list. Please try again.",
-      );
+  const debouncedSearch = useDebounce(search, 300);
+  const skipInitialFetch = useRef(true);
+
+  useEffect(() => {
+    if (skipInitialFetch.current) {
+      skipInitialFetch.current = false;
+      return;
     }
-  }
+
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const result = await getUserManagementRowsAction({ search: debouncedSearch, filters });
+        if (!cancelled) setRows(result);
+      } catch {
+        if (!cancelled) {
+          toastError(
+            "Failed to refresh users",
+            "We couldn't retrieve the user list. Please try again.",
+          );
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedSearch, filters, refreshTrigger]);
+
+  const refresh = () => setRefreshTrigger((trigger) => trigger + 1);
 
   return (
     <div className={styles.page}>
@@ -63,7 +107,15 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
         </div>
         <Button onPress={() => setAddOpen(true)}>+ Add user</Button>
       </div>
-      <TextField label="Search users" value={search} onChange={(value) => void refresh(value)} />
+      <ListToolbar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search users..."
+        searchLabel="Search users"
+        filters={userFilters}
+        filterValues={filters}
+        onFiltersChange={setFilters}
+      />
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead>
@@ -84,7 +136,7 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
               >
                 <td>{row.name ?? "—"}</td>
                 <td>{row.email}</td>
-                <td>{row.role}</td>
+                <td>{roleLabels[row.role]}</td>
                 <td>
                   {row.clubName
                     ? formatClubLabel({ name: row.clubName, shortName: row.clubShortName })
@@ -148,10 +200,17 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
                 </td>
               </tr>
             ))}
+            {rows.length === 0 && (
+              <tr>
+                <td colSpan={6} className={styles.empty}>
+                  No users match the current search or filters.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
-      <AddUserModal isOpen={addOpen} onOpenChange={setAddOpen} onSuccess={() => void refresh()} />
+      <AddUserModal isOpen={addOpen} onOpenChange={setAddOpen} onSuccess={refresh} />
       {clubRow && clubRow.kind === "user" && (
         <AssignClubModal
           key={clubRow.id}
@@ -162,7 +221,7 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
           onOpenChange={(open) => {
             if (!open) setClubRow(null);
           }}
-          onSuccess={() => void refresh()}
+          onSuccess={refresh}
         />
       )}
       {roleRow && roles.includes(roleRow.role as AssignableRole) && (
@@ -174,7 +233,7 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
           onOpenChange={(open) => {
             if (!open) setRoleRow(null);
           }}
-          onSuccess={() => void refresh()}
+          onSuccess={refresh}
         />
       )}
       <ConfirmDialog
@@ -197,7 +256,7 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
             return;
           }
           setStatusRow(null);
-          await refresh();
+          refresh();
           toastSuccess(
             isActive ? "User reactivated" : "User deactivated",
             isActive
@@ -234,7 +293,7 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
             return;
           }
           setInvitationRow(null);
-          await refresh();
+          refresh();
           toastSuccess(
             "Invitation cancelled",
             `The invitation for ${invitationRow.email} has been cancelled.`,

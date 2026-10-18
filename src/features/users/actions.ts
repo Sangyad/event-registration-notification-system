@@ -27,15 +27,21 @@ import {
   UpdateRoleSchema,
   UserActiveSchema,
   UserIdSchema,
-  UserSearchSchema,
+  UserManagementQuerySchema,
+  type UserManagementQueryInput,
 } from "./schemas";
 
 export async function getUserManagementRowsAction(
-  search: string,
+  query: UserManagementQueryInput,
 ): Promise<Awaited<ReturnType<typeof getUserManagementRows>>> {
   await requirePermission("user.read");
-  const parsed = UserSearchSchema.safeParse({ search });
-  return getUserManagementRows(parsed.success ? parsed.data.search : "");
+  const parsed = UserManagementQuerySchema.safeParse(query);
+  if (!parsed.success) return getUserManagementRows();
+  return getUserManagementRows({
+    search: parsed.data.search,
+    role: parsed.data.filters?.role,
+    status: parsed.data.filters?.status,
+  });
 }
 
 export async function updateRoleAction(payload: unknown): Promise<ActionStatusResponse> {

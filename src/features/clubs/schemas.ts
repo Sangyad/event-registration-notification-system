@@ -21,6 +21,8 @@ export const UpdateClubSchema = CreateClubSchema.extend({ clubId: cuidSchema });
 
 export type ClubFormPayload = z.input<typeof CreateClubSchema> & { clubId?: string };
 
-export const ClubSearchSchema = z.object({
-  search: requiredText(100, "Search").optional().default(""),
+export const ClubManagementQuerySchema = z.object({
+  search: optionalText(100, "Search", true),
 });
+
+export type ClubManagementQueryInput = z.input<typeof ClubManagementQuerySchema>;

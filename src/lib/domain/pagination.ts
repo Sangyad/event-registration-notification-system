@@ -21,3 +21,38 @@ export function appendPage<T extends { id: string }>(prev: T[], rows: T[]): T[] 
   if (fresh.length === 0) return prev;
   return [...prev, ...fresh];
 }
+
+/**
+ * Encodes the ordered key parts of the last row in a page into an opaque,
+ * URL-safe cursor string.
+ *
+ * Keyset ("seek") pagination carries the sort key(s) of the boundary row rather
+ * than an offset, so appended or removed rows between page fetches never shift
+ * the window. Consumers treat the result as opaque and pass it back verbatim.
+ *
+ * @param parts - The sort key values of the boundary row, in sort order.
+ * @returns A base64url-encoded cursor string.
+ * @typeParam The parts are primitives (strings or numbers).
+ */
+export function encodeCursor(parts: (string | number)[]): string {
+  return btoa(JSON.stringify(parts)).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+}
+
+/**
+ * Decodes an opaque cursor produced by {@link encodeCursor}.
+ *
+ * @param cursor - The cursor string previously returned by {@link encodeCursor}.
+ * @returns The key parts, or `null` when the cursor is malformed or tampered with.
+ */
+export function decodeCursor(cursor: string): (string | number)[] | null {
+  try {
+    const base64 = cursor.replaceAll("-", "+").replaceAll("_", "/");
+    const parsed: unknown = JSON.parse(atob(base64));
+    if (!Array.isArray(parsed)) return null;
+    return parsed.filter(
+      (part): part is string | number => typeof part === "string" || typeof part === "number",
+    );
+  } catch {
+    return null;
+  }
+}

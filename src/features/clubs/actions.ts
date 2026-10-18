@@ -18,7 +18,13 @@ import {
   getClubRows,
   getClubUsage,
 } from "./queries";
-import { ClubIdSchema, ClubSearchSchema, CreateClubSchema, UpdateClubSchema } from "./schemas";
+import {
+  ClubIdSchema,
+  ClubManagementQuerySchema,
+  CreateClubSchema,
+  UpdateClubSchema,
+  type ClubManagementQueryInput,
+} from "./schemas";
 
 async function findClubConflict(name: string, shortName: string | null, excludeClubId?: string) {
   const nameMatch = (await findClubsByName(name, excludeClubId))[0];
@@ -46,11 +52,12 @@ export async function getClubOptionsAction(): Promise<Awaited<ReturnType<typeof 
 }
 
 export async function getClubRowsAction(
-  search: string,
+  query: ClubManagementQueryInput,
 ): Promise<Awaited<ReturnType<typeof getClubRows>>> {
   await requirePermission("club.read");
-  const parsed = ClubSearchSchema.safeParse({ search });
-  return getClubRows(parsed.success ? parsed.data.search : "");
+  const parsed = ClubManagementQuerySchema.safeParse(query);
+  if (!parsed.success) return getClubRows();
+  return getClubRows({ search: parsed.data.search });
 }
 
 export async function createClubAction(payload: unknown): Promise<ActionStatusResponse> {

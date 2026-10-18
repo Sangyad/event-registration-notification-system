@@ -1,24 +1,29 @@
 "use server";
 
 import { sendEmail } from "@/lib/messaging/email";
+import type { PageQuery } from "@/lib/primitives/types";
 import { actionInvalid, type ActionStatusResponse } from "@/lib/security/action-response";
 import { requireAuth, requirePermission } from "@/lib/security/auth-guards";
 import { toActionResponse } from "@/lib/security/errors";
 
 import { createNotification, markNotificationRead } from "./mutations";
 import {
+  getNotificationPage,
   getNotificationRecipients,
-  getNotificationsForUser,
   getUnreadNotificationCount,
   getUnreadNotificationsForUser,
+  type NotificationPage,
 } from "./queries";
-import { MarkReadSchema, SendNotificationSchema } from "./schemas";
+import { MarkReadSchema, NotificationPageQuerySchema, SendNotificationSchema } from "./schemas";
 
-export async function getNotificationsAction(): Promise<
-  Awaited<ReturnType<typeof getNotificationsForUser>>
-> {
+export async function getNotificationsPageAction(query: PageQuery): Promise<NotificationPage> {
   const session = await requireAuth();
-  return getNotificationsForUser(session.id, session.clubId);
+  const parsed = NotificationPageQuerySchema.safeParse(query);
+  return getNotificationPage({
+    userId: session.id,
+    clubId: session.clubId,
+    query: parsed.success ? parsed.data : {},
+  });
 }
 
 export async function getUnreadNotificationCountAction(): Promise<number> {

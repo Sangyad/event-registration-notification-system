@@ -55,6 +55,11 @@
         background: var(--color-surface-bg-alt);
       }
 
+      .empty {
+        text-align: center;
+        color: var(--color-text-muted);
+      }
+
       .actions {
         display: flex;
         flex-wrap: wrap;

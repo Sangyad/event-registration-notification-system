@@ -1,3 +1,4 @@
+import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/infra/prisma";
 
 export interface ClubOption {
@@ -19,6 +20,21 @@ export interface ClubUsage {
   notificationCount: number;
 }
 
+export interface ClubManagementQuery {
+  search?: string;
+}
+
+function buildClubSearchFilter(search: string): Prisma.ClubWhereInput {
+  return search
+    ? {
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { shortName: { contains: search, mode: "insensitive" } },
+        ],
+      }
+    : {};
+}
+
 export async function getClubOptions(): Promise<ClubOption[]> {
   return prisma.club.findMany({
     orderBy: { name: "asc" },
@@ -26,17 +42,10 @@ export async function getClubOptions(): Promise<ClubOption[]> {
   });
 }
 
-export async function getClubRows(search = ""): Promise<ClubRow[]> {
-  const normalizedSearch = search.trim();
+export async function getClubRows(query: ClubManagementQuery = {}): Promise<ClubRow[]> {
+  const { search = "" } = query;
   const clubs = await prisma.club.findMany({
-    where: normalizedSearch
-      ? {
-          OR: [
-            { name: { contains: normalizedSearch, mode: "insensitive" } },
-            { shortName: { contains: normalizedSearch, mode: "insensitive" } },
-          ],
-        }
-      : undefined,
+    where: buildClubSearchFilter(search.trim()),
     orderBy: { name: "asc" },
     select: {
       id: true,

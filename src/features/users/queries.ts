@@ -1,4 +1,5 @@
 import { Role } from "@/generated/prisma/browser";
+import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/infra/prisma";
 
 export interface UserManagementRow {
@@ -14,41 +15,76 @@ export interface UserManagementRow {
   createdAt: Date;
 }
 
-export async function getUserManagementRows(search = ""): Promise<UserManagementRow[]> {
+export type UserStatusFilter = "active" | "inactive" | "pending";
+
+export interface UserManagementQuery {
+  search?: string;
+  role?: Role[];
+  status?: UserStatusFilter[];
+}
+
+function buildUserSearchFilter(search: string): Prisma.UserWhereInput {
+  return search
+    ? {
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { email: { contains: search, mode: "insensitive" } },
+        ],
+      }
+    : {};
+}
+
+function buildPendingSearchFilter(search: string): Prisma.PendingRoleAssignmentWhereInput {
+  return search ? { email: { contains: search, mode: "insensitive" } } : {};
+}
+
+export async function getUserManagementRows(
+  query: UserManagementQuery = {},
+): Promise<UserManagementRow[]> {
+  const { search = "", role = [], status = [] } = query;
   const normalizedSearch = search.trim();
-  const users = await prisma.user.findMany({
-    where: normalizedSearch
-      ? {
-          OR: [
-            { name: { contains: normalizedSearch, mode: "insensitive" } },
-            { email: { contains: normalizedSearch, mode: "insensitive" } },
-          ],
-        }
-      : undefined,
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      isActive: true,
-      createdAt: true,
-      clubId: true,
-      club: { select: { name: true, shortName: true } },
-    },
-  });
-  const pending = await prisma.pendingRoleAssignment.findMany({
-    where: normalizedSearch
-      ? { email: { contains: normalizedSearch, mode: "insensitive" } }
-      : undefined,
-    select: {
-      id: true,
-      email: true,
-      role: true,
-      assignedAt: true,
-      clubId: true,
-      club: { select: { name: true, shortName: true } },
-    },
-  });
+  const wantsActive = status.includes("active");
+  const wantsInactive = status.includes("inactive");
+  const wantsPending = status.includes("pending");
+  const hasStatusFilter = status.length > 0;
+  const includeUsers = !hasStatusFilter || wantsActive || wantsInactive;
+  const includePending = !hasStatusFilter || wantsPending;
+
+  const users = includeUsers
+    ? await prisma.user.findMany({
+        where: {
+          ...buildUserSearchFilter(normalizedSearch),
+          ...(role.length > 0 ? { role: { in: role } } : {}),
+          ...(wantsActive !== wantsInactive ? { isActive: wantsActive } : {}),
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          isActive: true,
+          createdAt: true,
+          clubId: true,
+          club: { select: { name: true, shortName: true } },
+        },
+      })
+    : [];
+  const pending = includePending
+    ? await prisma.pendingRoleAssignment.findMany({
+        where: {
+          ...buildPendingSearchFilter(normalizedSearch),
+          ...(role.length > 0 ? { role: { in: role } } : {}),
+        },
+        select: {
+          id: true,
+          email: true,
+          role: true,
+          assignedAt: true,
+          clubId: true,
+          club: { select: { name: true, shortName: true } },
+        },
+      })
+    : [];
 
   return [
     ...users.map((user) => ({

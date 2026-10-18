@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaPenToSquare, FaTrash } from "react-icons/fa6";
 
 import { Button } from "@/components/ui/Button/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog/ConfirmDialog";
-import { TextField } from "@/components/ui/TextField/TextField";
+import { ListToolbar } from "@/components/ui/ListToolbar/ListToolbar";
 import { deleteClubAction, getClubRowsAction } from "@/features/clubs/actions";
 import { ClubFormModal } from "@/features/clubs/components/ClubFormModal/ClubFormModal";
 import type { ClubRow } from "@/features/clubs/queries";
 import { toastActionError, toastError, toastSuccess } from "@/lib/hooks/toast-utils";
+import { useDebounce } from "@/lib/hooks/useDebounce";
 
 import styles from "./ClubsManagement.module.css";
 
@@ -20,22 +21,44 @@ interface ClubsManagementProps {
 export function ClubsManagement({ initialRows }: ClubsManagementProps) {
   const [rows, setRows] = useState(initialRows);
   const [search, setSearch] = useState("");
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [addOpen, setAddOpen] = useState(false);
   const [editClub, setEditClub] = useState<ClubRow | null>(null);
   const [deleteRow, setDeleteRow] = useState<ClubRow | null>(null);
 
-  async function refresh(value?: string) {
-    const query = value ?? search;
-    setSearch(query);
-    try {
-      setRows(await getClubRowsAction(query));
-    } catch {
-      toastError(
-        "Failed to refresh clubs",
-        "We couldn't retrieve the club list. Please try again.",
-      );
+  const debouncedSearch = useDebounce(search, 300);
+  const skipInitialFetch = useRef(true);
+
+  useEffect(() => {
+    if (skipInitialFetch.current) {
+      skipInitialFetch.current = false;
+      return;
     }
-  }
+
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const result = await getClubRowsAction({ search: debouncedSearch });
+        if (!cancelled) setRows(result);
+      } catch {
+        if (!cancelled) {
+          toastError(
+            "Failed to refresh clubs",
+            "We couldn't retrieve the club list. Please try again.",
+          );
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedSearch, refreshTrigger]);
+
+  const refresh = () => setRefreshTrigger((trigger) => trigger + 1);
 
   return (
     <div className={styles.page}>
@@ -46,7 +69,12 @@ export function ClubsManagement({ initialRows }: ClubsManagementProps) {
         </div>
         <Button onPress={() => setAddOpen(true)}>+ Add club</Button>
       </div>
-      <TextField label="Search clubs" value={search} onChange={(value) => void refresh(value)} />
+      <ListToolbar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search clubs..."
+        searchLabel="Search clubs"
+      />
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead>
@@ -81,10 +109,17 @@ export function ClubsManagement({ initialRows }: ClubsManagementProps) {
                 </td>
               </tr>
             ))}
+            {rows.length === 0 && (
+              <tr>
+                <td colSpan={5} className={styles.empty}>
+                  No clubs match the current search.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
-      <ClubFormModal isOpen={addOpen} onOpenChange={setAddOpen} onSuccess={() => void refresh()} />
+      <ClubFormModal isOpen={addOpen} onOpenChange={setAddOpen} onSuccess={refresh} />
       {editClub && (
         <ClubFormModal
           key={editClub.id}
@@ -93,7 +128,7 @@ export function ClubsManagement({ initialRows }: ClubsManagementProps) {
           onOpenChange={(open) => {
             if (!open) setEditClub(null);
           }}
-          onSuccess={() => void refresh()}
+          onSuccess={refresh}
         />
       )}
       <ConfirmDialog
@@ -111,7 +146,7 @@ export function ClubsManagement({ initialRows }: ClubsManagementProps) {
             return;
           }
           setDeleteRow(null);
-          await refresh();
+          refresh();
           toastSuccess("Club deleted", `The club ${deleteRow.name} has been deleted.`);
         }}
       >

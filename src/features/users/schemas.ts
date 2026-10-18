@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { Role } from "@/generated/prisma/browser";
-import { emailText, requiredText } from "@/lib/validation/form-utils";
+import { emailText, optionalText } from "@/lib/validation/form-utils";
 
 export const AssignableRoleSchema = z.enum([Role.STUDENT, Role.OFFICER, Role.ADMIN]);
 
@@ -30,6 +30,18 @@ export const SetUserClubSchema = z.object({
   clubId: clubIdSchema.nullable(),
 });
 
-export const UserSearchSchema = z.object({
-  search: requiredText(100, "Search").optional().default(""),
+export const UserRoleFilterSchema = z.enum([Role.STUDENT, Role.OFFICER, Role.ADMIN, Role.DEV]);
+
+export const UserStatusFilterSchema = z.enum(["active", "inactive", "pending"]);
+
+export const UserManagementQuerySchema = z.object({
+  search: optionalText(100, "Search", true),
+  filters: z
+    .object({
+      role: z.array(UserRoleFilterSchema).optional(),
+      status: z.array(UserStatusFilterSchema).optional(),
+    })
+    .optional(),
 });
+
+export type UserManagementQueryInput = z.input<typeof UserManagementQuerySchema>;

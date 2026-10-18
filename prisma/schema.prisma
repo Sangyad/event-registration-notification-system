@@ -102,6 +102,8 @@ model Notification {
   createdBy   User                 @relation("NotificationSender", fields: [createdById], references: [id])
   createdAt   DateTime             @default(now())
   reads       NotificationRead[]
+
+  @@index([createdAt(sort: Desc), id(sort: Desc)])
 }
 
 model NotificationRead {
