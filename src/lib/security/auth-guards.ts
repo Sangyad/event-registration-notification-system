@@ -3,6 +3,7 @@ import { auth } from "@/lib/infra/auth";
 import { DeactivatedError, ForbiddenError, UnauthorizedError } from "@/lib/security/errors";
 import { can, type Permission } from "@/lib/security/rbac";
 
+/** Minimal authenticated-user projection shared by the auth guards. */
 export interface AuthenticatedUser {
   id: string;
   email: string;
@@ -12,6 +13,13 @@ export interface AuthenticatedUser {
   clubId: string | null;
 }
 
+/**
+ * Enforces an authenticated session and returns the verified user.
+ *
+ * @returns The authenticated user projection.
+ * @throws {UnauthorizedError} when the session is missing a required field.
+ * @throws {DeactivatedError} when the account has been deactivated.
+ */
 export async function requireAuth(): Promise<AuthenticatedUser> {
   const session = await auth();
   const user = session?.user;
@@ -27,8 +35,19 @@ export async function requireAuth(): Promise<AuthenticatedUser> {
   };
 }
 
-export async function requirePermission(permission: Permission): Promise<AuthenticatedUser> {
+/**
+ * Enforces the session and that the user holds at least one of the given
+ * permissions, evaluated against the central RBAC matrix
+ * (`src/lib/security/rbac.ts`).
+ *
+ * @param permissions - One or more granular permissions; the caller must be
+ *                      granted at least one.
+ * @returns The authenticated user when authorized.
+ * @throws {UnauthorizedError} when there is no session.
+ * @throws {ForbiddenError} when no permission is granted.
+ */
+export async function requirePermission(...permissions: Permission[]): Promise<AuthenticatedUser> {
   const user = await requireAuth();
-  if (!can(user.role, permission)) throw new ForbiddenError();
+  if (!permissions.some((permission) => can(user.role, permission))) throw new ForbiddenError();
   return user;
 }

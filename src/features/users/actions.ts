@@ -33,14 +33,14 @@ import {
 export async function getUserManagementRowsAction(
   search: string,
 ): Promise<Awaited<ReturnType<typeof getUserManagementRows>>> {
-  await requirePermission("manageUsers");
+  await requirePermission("user.read");
   const parsed = UserSearchSchema.safeParse({ search });
   return getUserManagementRows(parsed.success ? parsed.data.search : "");
 }
 
 export async function updateRoleAction(payload: unknown): Promise<ActionStatusResponse> {
   try {
-    await requirePermission("manageUsers");
+    await requirePermission("user.update");
     const parsed = UpdateRoleSchema.safeParse(payload);
     if (!parsed.success) return actionInvalid("user role");
     const target = await getUserById(parsed.data.userId);
@@ -70,7 +70,7 @@ export async function setActiveAction(
   payload: unknown,
 ): Promise<ActionDataResponse<{ selfDeactivated: boolean }>> {
   try {
-    const session = await requirePermission("manageUsers");
+    const session = await requirePermission("user.update");
     const parsed = UserActiveSchema.safeParse(payload);
     if (!parsed.success) return actionInvalid("user status");
     const target = await getUserById(parsed.data.userId);
@@ -96,7 +96,7 @@ export async function setActiveAction(
 
 export async function addPendingUserAction(payload: unknown): Promise<ActionStatusResponse> {
   try {
-    const session = await requirePermission("manageUsers");
+    const session = await requirePermission("user.create");
     const parsed = AddPendingUserSchema.safeParse(payload);
     if (!parsed.success) return actionInvalid("pending user");
     if (parsed.data.clubId) {
@@ -118,7 +118,7 @@ export async function addPendingUserAction(payload: unknown): Promise<ActionStat
 
 export async function setUserClubAction(payload: unknown): Promise<ActionStatusResponse> {
   try {
-    await requirePermission("manageUsers");
+    await requirePermission("user.update");
     const parsed = SetUserClubSchema.safeParse(payload);
     if (!parsed.success) return actionInvalid("club assignment");
     const target = await getUserById(parsed.data.userId);
@@ -138,7 +138,7 @@ export async function cancelPendingInvitationAction(
   payload: unknown,
 ): Promise<ActionStatusResponse> {
   try {
-    await requirePermission("manageUsers");
+    await requirePermission("user.delete");
     const parsed = UserIdSchema.safeParse(payload);
     if (!parsed.success) return actionInvalid("pending assignment");
     await deletePendingInvitation(parsed.data.userId);

@@ -41,21 +41,21 @@ async function findClubConflict(name: string, shortName: string | null, excludeC
 }
 
 export async function getClubOptionsAction(): Promise<Awaited<ReturnType<typeof getClubOptions>>> {
-  await requirePermission("sendNotifications");
+  await requirePermission("notification.create", "user.update");
   return getClubOptions();
 }
 
 export async function getClubRowsAction(
   search: string,
 ): Promise<Awaited<ReturnType<typeof getClubRows>>> {
-  await requirePermission("manageClubs");
+  await requirePermission("club.read");
   const parsed = ClubSearchSchema.safeParse({ search });
   return getClubRows(parsed.success ? parsed.data.search : "");
 }
 
 export async function createClubAction(payload: unknown): Promise<ActionStatusResponse> {
   try {
-    await requirePermission("manageClubs");
+    await requirePermission("club.create");
     const parsed = CreateClubSchema.safeParse(payload);
     if (!parsed.success) return actionInvalid("club");
     const conflict = await findClubConflict(parsed.data.name, parsed.data.shortName ?? null);
@@ -69,7 +69,7 @@ export async function createClubAction(payload: unknown): Promise<ActionStatusRe
 
 export async function updateClubAction(payload: unknown): Promise<ActionStatusResponse> {
   try {
-    await requirePermission("manageClubs");
+    await requirePermission("club.update");
     const parsed = UpdateClubSchema.safeParse(payload);
     if (!parsed.success) return actionInvalid("club");
     const existing = await getClubById(parsed.data.clubId);
@@ -92,7 +92,7 @@ export async function updateClubAction(payload: unknown): Promise<ActionStatusRe
 
 export async function deleteClubAction(payload: unknown): Promise<ActionStatusResponse> {
   try {
-    await requirePermission("manageClubs");
+    await requirePermission("club.delete");
     const parsed = ClubIdSchema.safeParse(payload);
     if (!parsed.success) return actionInvalid("club");
     const usage = await getClubUsage(parsed.data.clubId);

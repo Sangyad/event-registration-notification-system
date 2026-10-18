@@ -25,8 +25,8 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: "Notifications", href: "/notifications", icon: FaBell },
-  { label: "Manage Users", href: "/admin/users", icon: FaUsers, permission: "manageUsers" },
-  { label: "Manage Clubs", href: "/admin/clubs", icon: FaBuilding, permission: "manageClubs" },
+  { label: "Manage Users", href: "/admin/users", icon: FaUsers, permission: "user.read" },
+  { label: "Manage Clubs", href: "/admin/clubs", icon: FaBuilding, permission: "club.read" },
 ];
 
 interface SidebarProps {

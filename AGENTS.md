@@ -142,6 +142,7 @@ Read the docs online if needed. Make sure to match the version declared in `pack
 ### Auth guards
 
 - Protect every action with a centralized guard at the very top of the execution flow (verified session first, then authorization). Guards throw typed errors and the action's catch maps them to envelopes. Do not write inline, ad-hoc session verification logic inside individual actions.
+- Authorization is driven by the permission matrix in `src/lib/security/rbac.ts`, which mirrors [`documentation/RBAC.md`](./documentation/RBAC.md) cell-for-cell - the single source of truth. Permissions are granular `entity.action` strings; a policy change edits the matrix cell and the matching doc table in the same change. Evaluate grants with `requirePermission(...permissions)` (one or more; authorizes when the user holds at least one) or `can(role, permission)` for presentation-only checks.
 - Client-side permission checks are presentation-only (show/hide coarse UI like tabs or Add buttons). Render per-record action buttons and surface denials via the toast helpers so users see why an action failed.
 
 ### Payloads and forms

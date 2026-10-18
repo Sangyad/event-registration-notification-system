@@ -47,7 +47,7 @@ export async function markNotificationReadAction(payload: unknown): Promise<Acti
 
 export async function sendNotificationAction(payload: unknown): Promise<ActionStatusResponse> {
   try {
-    const session = await requirePermission("sendNotifications");
+    const session = await requirePermission("notification.create");
     const parsed = SendNotificationSchema.safeParse(payload);
     if (!parsed.success) return actionInvalid("notification");
     const notification = await createNotification({ ...parsed.data, createdById: session.id });
