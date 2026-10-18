@@ -1,14 +1,16 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FaBan, FaPencil, FaUserCheck } from "react-icons/fa6";
 
 import { Button } from "@/components/ui/Button/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog/ConfirmDialog";
 import { StatusBadge } from "@/components/ui/StatusBadge/StatusBadge";
 import { TextField } from "@/components/ui/TextField/TextField";
 import { Tooltip, TooltipTrigger } from "@/components/ui/Tooltip/Tooltip";
 import {
-  cancelPendingUserAction,
+  cancelPendingInvitationAction,
   getUserManagementRowsAction,
   setActiveAction,
 } from "@/features/users/actions";
@@ -28,10 +30,13 @@ const roles = [Role.STUDENT, Role.OFFICER, Role.ADMIN];
 type AssignableRole = (typeof roles)[number];
 
 export function UsersManagement({ initialRows }: UsersManagementProps) {
+  const router = useRouter();
   const [rows, setRows] = useState(initialRows);
   const [search, setSearch] = useState("");
   const [addOpen, setAddOpen] = useState(false);
   const [roleRow, setRoleRow] = useState<UserManagementRow | null>(null);
+  const [statusRow, setStatusRow] = useState<UserManagementRow | null>(null);
+  const [invitationRow, setInvitationRow] = useState<UserManagementRow | null>(null);
 
   async function refresh(value?: string) {
     const query = value ?? search;
@@ -43,21 +48,6 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
         "Failed to refresh users",
         "We couldn't retrieve the user list. Please try again.",
       );
-    }
-  }
-
-  async function run(
-    action: Promise<{
-      success: boolean;
-      error?: { code: string; title: string; description: string };
-    }>,
-    operation: string,
-  ) {
-    const response = await action;
-    if (!response.success) toastActionError(response, operation);
-    else {
-      toastSuccess("Changes saved", "The user management list has been updated.");
-      await refresh();
     }
   }
 
@@ -102,16 +92,8 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
                 </td>
                 <td className={styles.actions}>
                   {row.kind === "pending" ? (
-                    <Button
-                      variant="ghost"
-                      onPress={() =>
-                        void run(
-                          cancelPendingUserAction({ userId: row.id }),
-                          "cancel pending assignment",
-                        )
-                      }
-                    >
-                      Cancel
+                    <Button variant="ghost" onPress={() => setInvitationRow(row)}>
+                      Cancel invitation
                     </Button>
                   ) : (
                     <>
@@ -119,22 +101,20 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
                         <Button
                           variant="ghost"
                           aria-label="Edit role"
+                          isDisabled={row.role === Role.DEV}
                           onPress={() => setRoleRow(row)}
                         >
                           <FaPencil aria-hidden="true" className={styles.actionIcon} />
                         </Button>
-                        <Tooltip>Edit role</Tooltip>
+                        <Tooltip>
+                          {row.role === Role.DEV ? "Developer role cannot be edited" : "Edit role"}
+                        </Tooltip>
                       </TooltipTrigger>
                       <TooltipTrigger>
                         <Button
                           variant="ghost"
                           aria-label={row.isActive ? "Deactivate user" : "Reactivate user"}
-                          onPress={() =>
-                            void run(
-                              setActiveAction({ userId: row.id, isActive: !row.isActive }),
-                              "update user status",
-                            )
-                          }
+                          onPress={() => setStatusRow(row)}
                         >
                           {row.isActive ? (
                             <FaBan aria-hidden="true" className={styles.actionIcon} />
@@ -165,6 +145,73 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
           onSuccess={() => void refresh()}
         />
       )}
+      <ConfirmDialog
+        isOpen={!!statusRow}
+        onOpenChange={(open) => {
+          if (!open) setStatusRow(null);
+        }}
+        title={statusRow?.isActive ? "Deactivate user" : "Reactivate user"}
+        confirmLabel={statusRow?.isActive ? "Deactivate" : "Reactivate"}
+        onConfirm={async () => {
+          if (!statusRow) return;
+          const isActive = !statusRow.isActive;
+          const result = await setActiveAction({ userId: statusRow.id, isActive });
+          if (!result.success) {
+            toastActionError(result, isActive ? "reactivate user" : "deactivate user");
+            return;
+          }
+          if (result.data?.selfDeactivated) {
+            router.push("/deactivated?reason=deactivated");
+            return;
+          }
+          setStatusRow(null);
+          await refresh();
+          toastSuccess(
+            isActive ? "User reactivated" : "User deactivated",
+            isActive
+              ? `The account for ${statusRow.email} can sign in again.`
+              : `The account for ${statusRow.email} has been deactivated.`,
+          );
+        }}
+      >
+        {statusRow?.isActive ? (
+          <>
+            Are you sure you want to deactivate <strong>{statusRow.name ?? statusRow.email}</strong>
+            ? They won&apos;t be able to sign in.
+          </>
+        ) : (
+          <>
+            Are you sure you want to reactivate{" "}
+            <strong>{statusRow?.name ?? statusRow?.email}</strong>? They will be able to sign in
+            again.
+          </>
+        )}
+      </ConfirmDialog>
+      <ConfirmDialog
+        isOpen={!!invitationRow}
+        onOpenChange={(open) => {
+          if (!open) setInvitationRow(null);
+        }}
+        title="Cancel invitation"
+        confirmLabel="Cancel invitation"
+        onConfirm={async () => {
+          if (!invitationRow) return;
+          const result = await cancelPendingInvitationAction({ userId: invitationRow.id });
+          if (!result.success) {
+            toastActionError(result, "cancel invitation");
+            return;
+          }
+          setInvitationRow(null);
+          await refresh();
+          toastSuccess(
+            "Invitation cancelled",
+            `The invitation for ${invitationRow.email} has been cancelled.`,
+          );
+        }}
+      >
+        Are you sure you want to cancel the invitation for <strong>{invitationRow?.email}</strong>?
+        They will need to be invited again.
+      </ConfirmDialog>
     </div>
   );
 }

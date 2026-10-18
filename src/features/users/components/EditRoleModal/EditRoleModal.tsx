@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Form } from "react-aria-components";
+import type { z } from "zod";
 
 import { Button } from "@/components/ui/Button/Button";
 import { Modal } from "@/components/ui/Modal/Modal";
@@ -36,7 +37,7 @@ export function EditRoleModal({
 }: EditRoleModalProps) {
   const [role, setRole] = useState<AssignableRole>(initialRole);
 
-  const { isPending, submitForm, handleCancel } = useModalForm({
+  const { isPending, submitForm, handleCancel } = useModalForm<z.input<typeof UpdateRoleSchema>>({
     submit: updateRoleAction,
     onOpenChange,
     onSuccess,

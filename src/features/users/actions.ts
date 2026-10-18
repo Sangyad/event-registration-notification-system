@@ -6,18 +6,24 @@ import {
   actionConflict,
   actionInvalid,
   actionNotFound,
+  type ActionDataResponse,
   type ActionStatusResponse,
 } from "@/lib/security/action-response";
 import { requirePermission } from "@/lib/security/auth-guards";
 import { toActionResponse } from "@/lib/security/errors";
 
 import {
-  deletePendingAssignment,
+  deletePendingInvitation,
   setUserActive,
   updateUserRole,
   upsertPendingAssignment,
 } from "./mutations";
-import { getClubs, getUserById, getUserManagementRows } from "./queries";
+import {
+  countActivePrivilegedUsers,
+  getClubs,
+  getUserById,
+  getUserManagementRows,
+} from "./queries";
 import {
   AddPendingUserSchema,
   UpdateRoleSchema,
@@ -51,6 +57,15 @@ export async function updateRoleAction(payload: unknown): Promise<ActionStatusRe
         "Developer account",
         "Developer accounts cannot be assigned through this form.",
       );
+    if (target.role === Role.ADMIN && parsed.data.role !== Role.ADMIN) {
+      const remaining = await countActivePrivilegedUsers(target.id);
+      if (remaining === 0) {
+        return actionConflict(
+          "Last administrator",
+          "Cannot remove the last active administrator. Assign another administrator or developer first.",
+        );
+      }
+    }
     await updateUserRole(parsed.data.userId, parsed.data.role);
     return { success: true };
   } catch (error) {
@@ -58,13 +73,29 @@ export async function updateRoleAction(payload: unknown): Promise<ActionStatusRe
   }
 }
 
-export async function setActiveAction(payload: unknown): Promise<ActionStatusResponse> {
+export async function setActiveAction(
+  payload: unknown,
+): Promise<ActionDataResponse<{ selfDeactivated: boolean }>> {
   try {
-    await requirePermission("manageUsers");
+    const session = await requirePermission("manageUsers");
     const parsed = UserActiveSchema.safeParse(payload);
     if (!parsed.success) return actionInvalid("user status");
+    const target = await getUserById(parsed.data.userId);
+    if (!target) return actionNotFound("User");
+    if (!parsed.data.isActive && (target.role === Role.ADMIN || target.role === Role.DEV)) {
+      const remaining = await countActivePrivilegedUsers(target.id);
+      if (remaining === 0) {
+        return actionConflict(
+          "Last administrator",
+          "Cannot deactivate the last active administrator or developer. Assign another administrator or developer first.",
+        );
+      }
+    }
     await setUserActive(parsed.data.userId, parsed.data.isActive);
-    return { success: true };
+    return {
+      success: true,
+      data: { selfDeactivated: parsed.data.userId === session.id && !parsed.data.isActive },
+    };
   } catch (error) {
     return toActionResponse(error, "update user status");
   }
@@ -88,12 +119,14 @@ export async function addPendingUserAction(payload: unknown): Promise<ActionStat
   }
 }
 
-export async function cancelPendingUserAction(payload: unknown): Promise<ActionStatusResponse> {
+export async function cancelPendingInvitationAction(
+  payload: unknown,
+): Promise<ActionStatusResponse> {
   try {
     await requirePermission("manageUsers");
     const parsed = UserIdSchema.safeParse(payload);
     if (!parsed.success) return actionInvalid("pending assignment");
-    await deletePendingAssignment(parsed.data.userId);
+    await deletePendingInvitation(parsed.data.userId);
     return { success: true };
   } catch (error) {
     return toActionResponse(error, "cancel pending assignment");

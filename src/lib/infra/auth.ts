@@ -9,12 +9,13 @@ import { getOptionalEnvVar, getRequiredEnvVar } from "@/lib/infra/env";
 const schoolDomain = "@acdeducation.com";
 
 /**
- * NextAuth configuration (Google OAuth + Prisma adapter + database sessions).
+ * NextAuth configuration (Google OAuth + Prisma adapter + JWT sessions).
  *
  * The `signIn` callback gates access by school-domain email, bootstrap
  * `DEV_EMAIL`, pending role assignments, and active-user status; the `session`
- * callback projects the database `id`, `role`, `isActive`, and `clubId` onto
- * the session so downstream guards see the verified user.
+ * callbacks refresh the database `id`, `role`, `isActive`, and `clubId` onto
+ * the JWT and session so deactivated users can be redirected to the notice
+ * page without being silently sent to sign-in.
  *
  * Exports the route `handlers`, `signIn`/`signOut` helpers, and the `auth()`
  * session getter.
@@ -29,9 +30,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       allowDangerousEmailAccountLinking: true,
     }),
   ],
-  session: {
-    strategy: "database",
-  },
+  session: { strategy: "jwt" },
   pages: {
     signIn: "/sign-in",
     error: "/auth/error",
@@ -94,12 +93,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return true;
     },
 
-    async session({ session, user }) {
+    async jwt({ token }) {
+      if (!token.email) return token;
+
+      const user = await getAuthAdapterClient().user.findUnique({
+        where: { email: token.email },
+        select: { id: true, role: true, isActive: true, clubId: true },
+      });
+
+      if (!user) return null;
+
+      token.id = user.id;
+      token.role = user.role;
+      token.isActive = user.isActive;
+      token.clubId = user.clubId;
+      return token;
+    },
+
+    async session({ session, token }) {
       if (session.user) {
-        session.user.id = user.id;
-        session.user.role = user.role ?? Role.STUDENT;
-        session.user.isActive = user.isActive !== false;
-        session.user.clubId = user.clubId ?? null;
+        session.user.id = token.id ?? "";
+        session.user.role = token.role ?? Role.STUDENT;
+        session.user.isActive = token.isActive !== false;
+        session.user.clubId = token.clubId ?? null;
       }
       return session;
     },

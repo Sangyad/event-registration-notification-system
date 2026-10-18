@@ -39,6 +39,6 @@ export async function upsertPendingAssignment(
   });
 }
 
-export async function deletePendingAssignment(id: string): Promise<void> {
+export async function deletePendingInvitation(id: string): Promise<void> {
   await prisma.pendingRoleAssignment.delete({ where: { id } });
 }

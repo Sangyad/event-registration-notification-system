@@ -1,4 +1,4 @@
-import type { Role } from "@/generated/prisma/browser";
+import { Role } from "@/generated/prisma/browser";
 import { prisma } from "@/lib/infra/prisma";
 
 export interface UserManagementRow {
@@ -54,7 +54,20 @@ export async function getUserManagementRows(search = ""): Promise<UserManagement
 }
 
 export async function getUserById(userId: string) {
-  return prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true } });
+  return prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, role: true, isActive: true },
+  });
+}
+
+export async function countActivePrivilegedUsers(excludeUserId?: string) {
+  return prisma.user.count({
+    where: {
+      isActive: true,
+      role: { in: [Role.ADMIN, Role.DEV] },
+      ...(excludeUserId ? { id: { not: excludeUserId } } : {}),
+    },
+  });
 }
 
 export async function getClubs() {
