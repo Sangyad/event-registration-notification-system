@@ -8,6 +8,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog/ConfirmDialog";
 import { ListToolbar } from "@/components/ui/ListToolbar/ListToolbar";
 import { deleteClubAction, getClubRowsAction } from "@/features/clubs/actions";
 import { ClubFormModal } from "@/features/clubs/components/ClubFormModal/ClubFormModal";
+import { ClubLabel } from "@/features/clubs/components/ClubLabel/ClubLabel";
 import type { ClubRow } from "@/features/clubs/queries";
 import { toastActionError, toastError, toastSuccess } from "@/lib/hooks/toast-utils";
 import { useDebounce } from "@/lib/hooks/useDebounce";
@@ -79,8 +80,7 @@ export function ClubsManagement({ initialRows }: ClubsManagementProps) {
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Short name</th>
+              <th>Club</th>
               <th>Members</th>
               <th>Events</th>
               <th>Actions</th>
@@ -89,9 +89,8 @@ export function ClubsManagement({ initialRows }: ClubsManagementProps) {
           <tbody>
             {rows.map((row) => (
               <tr key={row.id}>
-                <td>{row.name}</td>
                 <td>
-                  {row.shortName ? <span className={styles.badge}>{row.shortName}</span> : "—"}
+                  <ClubLabel name={row.name} shortName={row.shortName} />
                 </td>
                 <td>{row.memberCount}</td>
                 <td>{row.eventCount}</td>
@@ -111,7 +110,7 @@ export function ClubsManagement({ initialRows }: ClubsManagementProps) {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={5} className={styles.empty}>
+                <td colSpan={4} className={styles.empty}>
                   No clubs match the current search.
                 </td>
               </tr>
@@ -147,11 +146,15 @@ export function ClubsManagement({ initialRows }: ClubsManagementProps) {
           }
           setDeleteRow(null);
           refresh();
-          toastSuccess("Club deleted", `The club ${deleteRow.name} has been deleted.`);
+          toastSuccess(
+            "Club deleted",
+            `The club ${deleteRow.shortName ?? deleteRow.name} has been deleted.`,
+          );
         }}
       >
-        Are you sure you want to delete <strong>{deleteRow?.name}</strong>? This action cannot be
-        undone.
+        Are you sure you want to delete{" "}
+        {deleteRow && <ClubLabel name={deleteRow.name} shortName={deleteRow.shortName} />}? This
+        action cannot be undone.
       </ConfirmDialog>
     </div>
   );

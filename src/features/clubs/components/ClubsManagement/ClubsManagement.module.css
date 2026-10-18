@@ -51,17 +51,6 @@
         font-weight: var(--font-weight-medium);
       }
 
-      .badge {
-        display: inline-block;
-        padding: var(--space-xs) var(--space-sm);
-        border-radius: var(--radius-sm);
-        background: var(--color-surface-bg-alt);
-        color: var(--color-text-muted);
-        font-size: var(--font-size-sm);
-        font-weight: var(--font-weight-medium);
-        letter-spacing: 0.04em;
-      }
-
       .empty {
         text-align: center;
         color: var(--color-text-muted);
@@ -90,10 +79,10 @@
 
     .tableWrap {
       .table {
+        th:nth-child(2),
+        td:nth-child(2),
         th:nth-child(3),
-        td:nth-child(3),
-        th:nth-child(4),
-        td:nth-child(4) {
+        td:nth-child(3) {
           display: none;
         }
       }

@@ -10,7 +10,7 @@ import { ListToolbar } from "@/components/ui/ListToolbar/ListToolbar";
 import { StatusBadge } from "@/components/ui/StatusBadge/StatusBadge";
 import type { FilterDefinition } from "@/components/ui/TableFilter/TableFilter";
 import { Tooltip, TooltipTrigger } from "@/components/ui/Tooltip/Tooltip";
-import { formatClubLabel } from "@/features/clubs/constants";
+import { ClubLabel } from "@/features/clubs/components/ClubLabel/ClubLabel";
 import {
   cancelPendingInvitationAction,
   getUserManagementRowsAction,
@@ -138,9 +138,11 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
                 <td>{row.email}</td>
                 <td>{roleLabels[row.role]}</td>
                 <td>
-                  {row.clubName
-                    ? formatClubLabel({ name: row.clubName, shortName: row.clubShortName })
-                    : "—"}
+                  {row.clubName ? (
+                    <ClubLabel name={row.clubName} shortName={row.clubShortName} />
+                  ) : (
+                    "—"
+                  )}
                 </td>
                 <td>
                   {row.kind === "pending" ? (

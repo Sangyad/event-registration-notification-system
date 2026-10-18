@@ -1,6 +1,7 @@
 "use client";
 
 import { Modal } from "@/components/ui/Modal/Modal";
+import { ClubLabel } from "@/features/clubs/components/ClubLabel/ClubLabel";
 import { NotificationAudience } from "@/generated/prisma/browser";
 import { formatDateTime } from "@/lib/primitives/date";
 
@@ -22,7 +23,13 @@ export function NotificationDetailModal({
     <Modal className={styles.modal} title={notification.title} isOpen onOpenChange={onOpenChange}>
       <div className={styles.meta}>
         <span className={styles.badge}>{audienceLabel}</span>
-        {notification.clubName && <span className={styles.badge}>{notification.clubName}</span>}
+        {notification.clubName && (
+          <ClubLabel
+            name={notification.clubName}
+            shortName={notification.clubShortName}
+            className={styles.badge}
+          />
+        )}
         <time className={styles.time} dateTime={notification.createdAt.toISOString()}>
           {formatDateTime(notification.createdAt)}
         </time>

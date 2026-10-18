@@ -10,6 +10,7 @@ const baseNotification: NotificationRow = {
   body: "Enrollment for the second semester opens on Monday, October 26. Make sure your profile and club assignment are up to date before then.",
   audience: NotificationAudience.ALL,
   clubName: null,
+  clubShortName: null,
   createdAt: new Date("2026-10-01T09:00:00Z"),
   isRead: false,
 };
@@ -44,6 +45,7 @@ export const ClubScoped: Story = {
       ...baseNotification,
       audience: NotificationAudience.CLUB,
       clubName: "League of Information Technology Students",
+      clubShortName: "LITS",
       isRead: true,
     },
   },

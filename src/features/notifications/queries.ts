@@ -10,6 +10,7 @@ export interface NotificationRow {
   body: string;
   audience: NotificationAudience;
   clubName: string | null;
+  clubShortName: string | null;
   createdAt: Date;
   isRead: boolean;
 }
@@ -95,7 +96,7 @@ export async function getNotificationPage({
     orderBy: [{ createdAt: direction }, { id: direction }],
     take: pageSize + 1,
     include: {
-      club: { select: { name: true } },
+      club: { select: { name: true, shortName: true } },
       reads: { where: { userId }, select: { id: true } },
     },
   });
@@ -111,6 +112,7 @@ export async function getNotificationPage({
       body: row.body,
       audience: row.audience,
       clubName: row.club?.name ?? null,
+      clubShortName: row.club?.shortName ?? null,
       createdAt: row.createdAt,
       isRead: row.reads.length > 0,
     })),
@@ -131,7 +133,7 @@ export async function getUnreadNotificationsForUser(
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     take: limit,
     include: {
-      club: { select: { name: true } },
+      club: { select: { name: true, shortName: true } },
     },
   });
   return rows.map((row) => ({
@@ -140,6 +142,7 @@ export async function getUnreadNotificationsForUser(
     body: row.body,
     audience: row.audience,
     clubName: row.club?.name ?? null,
+    clubShortName: row.club?.shortName ?? null,
     createdAt: row.createdAt,
     isRead: false,
   }));
