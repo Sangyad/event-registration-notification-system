@@ -17,7 +17,7 @@ import { MarkReadSchema, NotificationPageQuerySchema, SendNotificationSchema } f
 import { buildNotificationScope } from "./scope";
 
 export async function getNotificationsPageAction(query: PageQuery): Promise<NotificationPage> {
-  const session = await requireAuth();
+  const session = await requirePermission("notification.read");
   const parsed = NotificationPageQuerySchema.safeParse(query);
   return getNotificationPage({
     scope: buildNotificationScope(session),
@@ -26,7 +26,7 @@ export async function getNotificationsPageAction(query: PageQuery): Promise<Noti
 }
 
 export async function getUnreadNotificationCountAction(): Promise<number> {
-  const session = await requireAuth();
+  const session = await requirePermission("notification.read");
   return getUnreadNotificationCount(buildNotificationScope(session));
 }
 

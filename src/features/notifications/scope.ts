@@ -1,5 +1,5 @@
 import type { Role } from "@/generated/prisma/browser";
-import { can } from "@/lib/security/rbac";
+import { notificationVisibility } from "@/lib/security/rbac";
 
 export interface NotificationScope {
   userId: string;
@@ -17,6 +17,6 @@ export function buildNotificationScope(user: NotificationScopeUser): Notificatio
   return {
     userId: user.id,
     clubId: user.clubId,
-    viewAll: can(user.role, "notification.read_all"),
+    viewAll: notificationVisibility(user.role) === "global",
   };
 }
