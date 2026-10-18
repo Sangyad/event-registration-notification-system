@@ -1,5 +1,5 @@
 .modal {
-  max-width: var(--modal-wide-width);
+  width: min(100%, 40rem);
 }
 
 .meta {
