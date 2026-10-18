@@ -8,6 +8,7 @@ Conventions for AI coding agents working in this repo. Read this file before wri
 - If this prompt or rule contradicts the user's request, explicitly point it out so we can fix whichever one is at fault.
 - Read the actual file first. Don't assume you know what's in it.
 - Make the smallest coherent change that solves the request. Avoid unrelated refactors and speculative abstractions.
+- Refractors are always accepted as long as it improves correctness, readability, maintainability and consistency.
 - After making changes, run only the commands the touched files need.
 
   | Files touched                                       | Run                                                          |
@@ -39,6 +40,8 @@ Conventions for AI coding agents working in this repo. Read this file before wri
 - `direnv allow` (keeps shell) / `nix develop -c $SHELL` - pinned devShell via `flake.nix`
 
 ## Tech Stack
+
+Read the docs online if needed. Make sure to match the version declared in `package.json`.
 
 - Framework: Next.js 16 (App Router), React 19 + React Compiler.
 - Language: TypeScript strict
@@ -238,7 +241,7 @@ Do not introduce a new named interface or type alias for trivial object shapes (
 - Named exports only - no default exports, except for Next.js special files (`page.tsx`, `layout.tsx`, `error.tsx`, `global-error.tsx`, `not-found.tsx`, `loading.tsx`, `route.tsx` etc.) which require a default export. Use inline `export default function` for these files.
 - PascalCase components/types; camelCase variables/functions/files (component dirs are PascalCase).
 - No inline `//` comments unless explaining a non-obvious decision. TSDoc on `src/lib/` helpers is the explicit exception.
-- Prisma schema: `snake_case` fields, `PascalCase` models/enums.
+- Prisma schema: `camelCase` fields, `PascalCase` models/enums.
 - Keep credentials and server-only environment variables out of client bundles. Never hardcode or commit real secrets; validate required environment variables at an appropriate boundary (`secrets/` holds local secret material and is git-ignored).
 - Update docs when public APIs, behavior, setup, environment variables, or contracts change. Do not manually edit generated files (`src/generated/`, `next-env.d.ts`) unless their documented workflow requires it.
 
