@@ -20,7 +20,12 @@ import {
   updateUserRole,
   upsertPendingAssignment,
 } from "./mutations";
-import { countActivePrivilegedUsers, getUserById, getUserManagementRows } from "./queries";
+import {
+  countActivePrivilegedUsers,
+  getUserById,
+  getUserManagementRows,
+  type UserManagementRow,
+} from "./queries";
 import {
   AddPendingUserSchema,
   SetUserClubSchema,
@@ -33,7 +38,7 @@ import {
 
 export async function getUserManagementRowsAction(
   query: UserManagementQueryInput,
-): Promise<Awaited<ReturnType<typeof getUserManagementRows>>> {
+): Promise<UserManagementRow[]> {
   await requirePermission("user.read");
   const parsed = UserManagementQuerySchema.safeParse(query);
   if (!parsed.success) return getUserManagementRows();

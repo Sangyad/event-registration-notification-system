@@ -133,7 +133,7 @@ export async function getUnreadNotificationCount(scope: NotificationScope): Prom
 export async function getNotificationRecipients(
   audience: NotificationAudience,
   clubId: string | null,
-) {
+): Promise<{ email: string }[]> {
   return prisma.user.findMany({
     where: {
       isActive: true,

@@ -17,6 +17,8 @@ import {
   getClubOptions,
   getClubRows,
   getClubUsage,
+  type ClubOption,
+  type ClubRow,
 } from "./queries";
 import {
   ClubIdSchema,
@@ -46,14 +48,12 @@ async function findClubConflict(name: string, shortName: string | null, excludeC
   return null;
 }
 
-export async function getClubOptionsAction(): Promise<Awaited<ReturnType<typeof getClubOptions>>> {
+export async function getClubOptionsAction(): Promise<ClubOption[]> {
   await requirePermission("notification.create", "user.update");
   return getClubOptions();
 }
 
-export async function getClubRowsAction(
-  query: ClubManagementQueryInput,
-): Promise<Awaited<ReturnType<typeof getClubRows>>> {
+export async function getClubRowsAction(query: ClubManagementQueryInput): Promise<ClubRow[]> {
   await requirePermission("club.read");
   const parsed = ClubManagementQuerySchema.safeParse(query);
   if (!parsed.success) return getClubRows();

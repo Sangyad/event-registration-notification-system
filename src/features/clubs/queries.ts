@@ -89,7 +89,10 @@ export async function getClubUsage(clubId: string): Promise<ClubUsage | null> {
   };
 }
 
-export async function findClubsByName(name: string, excludeClubId?: string) {
+export async function findClubsByName(
+  name: string,
+  excludeClubId?: string,
+): Promise<Pick<ClubOption, "id" | "name">[]> {
   return prisma.club.findMany({
     where: {
       name: { equals: name, mode: "insensitive" },
@@ -99,7 +102,10 @@ export async function findClubsByName(name: string, excludeClubId?: string) {
   });
 }
 
-export async function findClubsByShortName(shortName: string, excludeClubId?: string) {
+export async function findClubsByShortName(
+  shortName: string,
+  excludeClubId?: string,
+): Promise<Pick<ClubOption, "id" | "shortName">[]> {
   return prisma.club.findMany({
     where: {
       shortName: { equals: shortName, mode: "insensitive" },

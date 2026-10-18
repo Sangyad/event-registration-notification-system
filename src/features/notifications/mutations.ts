@@ -1,4 +1,4 @@
-import type { NotificationAudience } from "@/generated/prisma/browser";
+import type { Notification, NotificationAudience } from "@/generated/prisma/browser";
 import { prisma } from "@/lib/infra/prisma";
 
 export async function createNotification(payload: {
@@ -7,7 +7,7 @@ export async function createNotification(payload: {
   audience: NotificationAudience;
   clubId: string | null;
   createdById: string;
-}) {
+}): Promise<Notification> {
   return prisma.notification.create({ data: payload });
 }
 

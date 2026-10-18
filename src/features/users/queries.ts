@@ -114,14 +114,16 @@ export async function getUserManagementRows(
   ].sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime());
 }
 
-export async function getUserById(userId: string) {
+export async function getUserById(
+  userId: string,
+): Promise<{ id: string; role: Role; isActive: boolean | null } | null> {
   return prisma.user.findUnique({
     where: { id: userId },
     select: { id: true, role: true, isActive: true },
   });
 }
 
-export async function countActivePrivilegedUsers(excludeUserId?: string) {
+export async function countActivePrivilegedUsers(excludeUserId?: string): Promise<number> {
   return prisma.user.count({
     where: {
       isActive: true,
