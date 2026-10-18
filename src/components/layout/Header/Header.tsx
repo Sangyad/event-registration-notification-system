@@ -29,6 +29,7 @@ export function Header({ userImage, userName, userRole, initialUnreadCount }: He
   const getPageTitle = (path: string) => {
     if (path.startsWith("/notifications")) return "Notifications";
     if (path.startsWith("/admin/users")) return "Manage Users";
+    if (path.startsWith("/admin/clubs")) return "Manage Clubs";
     return "";
   };
 

@@ -8,6 +8,9 @@ export interface UserManagementRow {
   email: string;
   role: Role;
   isActive: boolean | null;
+  clubId: string | null;
+  clubName: string | null;
+  clubShortName: string | null;
   createdAt: Date;
 }
 
@@ -22,13 +25,29 @@ export async function getUserManagementRows(search = ""): Promise<UserManagement
           ],
         }
       : undefined,
-    select: { id: true, name: true, email: true, role: true, isActive: true, createdAt: true },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      isActive: true,
+      createdAt: true,
+      clubId: true,
+      club: { select: { name: true, shortName: true } },
+    },
   });
   const pending = await prisma.pendingRoleAssignment.findMany({
     where: normalizedSearch
       ? { email: { contains: normalizedSearch, mode: "insensitive" } }
       : undefined,
-    select: { id: true, email: true, role: true, assignedAt: true },
+    select: {
+      id: true,
+      email: true,
+      role: true,
+      assignedAt: true,
+      clubId: true,
+      club: { select: { name: true, shortName: true } },
+    },
   });
 
   return [
@@ -39,6 +58,9 @@ export async function getUserManagementRows(search = ""): Promise<UserManagement
       email: user.email,
       role: user.role,
       isActive: user.isActive,
+      clubId: user.clubId,
+      clubName: user.club?.name ?? null,
+      clubShortName: user.club?.shortName ?? null,
       createdAt: user.createdAt,
     })),
     ...pending.map((assignment) => ({
@@ -48,6 +70,9 @@ export async function getUserManagementRows(search = ""): Promise<UserManagement
       email: assignment.email,
       role: assignment.role,
       isActive: null,
+      clubId: assignment.clubId,
+      clubName: assignment.club?.name ?? null,
+      clubShortName: assignment.club?.shortName ?? null,
       createdAt: assignment.assignedAt,
     })),
   ].sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime());
@@ -68,8 +93,4 @@ export async function countActivePrivilegedUsers(excludeUserId?: string) {
       ...(excludeUserId ? { id: { not: excludeUserId } } : {}),
     },
   });
-}
-
-export async function getClubs() {
-  return prisma.club.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } });
 }

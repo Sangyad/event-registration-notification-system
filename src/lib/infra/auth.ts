@@ -73,6 +73,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               name: user.name ?? email,
               image: user.image,
               role,
+              clubId: pending?.clubId ?? null,
             },
           });
           if (pending)

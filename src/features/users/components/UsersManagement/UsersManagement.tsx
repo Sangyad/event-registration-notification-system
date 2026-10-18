@@ -2,19 +2,21 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { FaBan, FaPencil, FaUserCheck } from "react-icons/fa6";
+import { FaBan, FaPencil, FaPeopleGroup, FaUserCheck } from "react-icons/fa6";
 
 import { Button } from "@/components/ui/Button/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog/ConfirmDialog";
 import { StatusBadge } from "@/components/ui/StatusBadge/StatusBadge";
 import { TextField } from "@/components/ui/TextField/TextField";
 import { Tooltip, TooltipTrigger } from "@/components/ui/Tooltip/Tooltip";
+import { formatClubLabel } from "@/features/clubs/constants";
 import {
   cancelPendingInvitationAction,
   getUserManagementRowsAction,
   setActiveAction,
 } from "@/features/users/actions";
 import { AddUserModal } from "@/features/users/components/AddUserModal/AddUserModal";
+import { AssignClubModal } from "@/features/users/components/AssignClubModal/AssignClubModal";
 import { EditRoleModal } from "@/features/users/components/EditRoleModal/EditRoleModal";
 import type { UserManagementRow } from "@/features/users/queries";
 import { Role } from "@/generated/prisma/browser";
@@ -35,6 +37,7 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
   const [search, setSearch] = useState("");
   const [addOpen, setAddOpen] = useState(false);
   const [roleRow, setRoleRow] = useState<UserManagementRow | null>(null);
+  const [clubRow, setClubRow] = useState<UserManagementRow | null>(null);
   const [statusRow, setStatusRow] = useState<UserManagementRow | null>(null);
   const [invitationRow, setInvitationRow] = useState<UserManagementRow | null>(null);
 
@@ -68,6 +71,7 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
               <th>Name</th>
               <th>Email</th>
               <th>Role</th>
+              <th>Club</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -81,6 +85,11 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
                 <td>{row.name ?? "—"}</td>
                 <td>{row.email}</td>
                 <td>{row.role}</td>
+                <td>
+                  {row.clubName
+                    ? formatClubLabel({ name: row.clubName, shortName: row.clubShortName })
+                    : "—"}
+                </td>
                 <td>
                   {row.kind === "pending" ? (
                     <StatusBadge variant="pending">Pending</StatusBadge>
@@ -113,6 +122,16 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
                       <TooltipTrigger>
                         <Button
                           variant="ghost"
+                          aria-label="Assign club"
+                          onPress={() => setClubRow(row)}
+                        >
+                          <FaPeopleGroup aria-hidden="true" className={styles.actionIcon} />
+                        </Button>
+                        <Tooltip>Assign club</Tooltip>
+                      </TooltipTrigger>
+                      <TooltipTrigger>
+                        <Button
+                          variant="ghost"
                           aria-label={row.isActive ? "Deactivate user" : "Reactivate user"}
                           onPress={() => setStatusRow(row)}
                         >
@@ -133,6 +152,19 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
         </table>
       </div>
       <AddUserModal isOpen={addOpen} onOpenChange={setAddOpen} onSuccess={() => void refresh()} />
+      {clubRow && clubRow.kind === "user" && (
+        <AssignClubModal
+          key={clubRow.id}
+          userId={clubRow.id}
+          userLabel={clubRow.name ?? clubRow.email}
+          initialClubId={clubRow.clubId}
+          isOpen
+          onOpenChange={(open) => {
+            if (!open) setClubRow(null);
+          }}
+          onSuccess={() => void refresh()}
+        />
+      )}
       {roleRow && roles.includes(roleRow.role as AssignableRole) && (
         <EditRoleModal
           userId={roleRow.id}

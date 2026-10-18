@@ -6,6 +6,7 @@ import { emailText, requiredText } from "@/lib/validation/form-utils";
 export const AssignableRoleSchema = z.enum([Role.STUDENT, Role.OFFICER, Role.ADMIN]);
 
 const cuidSchema = z.string().regex(/^c[a-z0-9]{24}$/, "Invalid user identifier");
+const clubIdSchema = z.string().regex(/^c[a-z0-9]{24}$/, "Invalid club identifier");
 
 export const UserIdSchema = z.object({ userId: cuidSchema });
 
@@ -21,6 +22,12 @@ export const AddPendingUserSchema = z.object({
     message: "Email must end in @acdeducation.com",
   }),
   role: AssignableRoleSchema,
+  clubId: clubIdSchema.nullable().default(null),
+});
+
+export const SetUserClubSchema = z.object({
+  userId: cuidSchema,
+  clubId: clubIdSchema.nullable(),
 });
 
 export const UserSearchSchema = z.object({

@@ -27,15 +27,20 @@ export async function setUserActive(userId: string, isActive: boolean): Promise<
   await prisma.user.update({ where: { id: userId }, data: { isActive } });
 }
 
+export async function setUserClub(userId: string, clubId: string | null): Promise<void> {
+  await prisma.user.update({ where: { id: userId }, data: { clubId } });
+}
+
 export async function upsertPendingAssignment(
   email: string,
   role: Role,
   assignedById: string,
+  clubId: string | null,
 ): Promise<void> {
   await prisma.pendingRoleAssignment.upsert({
     where: { email },
-    update: { role, assignedById, assignedAt: new Date() },
-    create: { email, role, assignedById },
+    update: { role, assignedById, clubId, assignedAt: new Date() },
+    create: { email, role, assignedById, clubId },
   });
 }
 

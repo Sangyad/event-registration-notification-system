@@ -1,5 +1,6 @@
 "use server";
 
+import { getClubById } from "@/features/clubs/queries";
 import { Role } from "@/generated/prisma/browser";
 import { sendEmail } from "@/lib/messaging/email";
 import {
@@ -15,17 +16,14 @@ import { toActionResponse } from "@/lib/security/errors";
 import {
   deletePendingInvitation,
   setUserActive,
+  setUserClub,
   updateUserRole,
   upsertPendingAssignment,
 } from "./mutations";
-import {
-  countActivePrivilegedUsers,
-  getClubs,
-  getUserById,
-  getUserManagementRows,
-} from "./queries";
+import { countActivePrivilegedUsers, getUserById, getUserManagementRows } from "./queries";
 import {
   AddPendingUserSchema,
+  SetUserClubSchema,
   UpdateRoleSchema,
   UserActiveSchema,
   UserIdSchema,
@@ -38,11 +36,6 @@ export async function getUserManagementRowsAction(
   await requirePermission("manageUsers");
   const parsed = UserSearchSchema.safeParse({ search });
   return getUserManagementRows(parsed.success ? parsed.data.search : "");
-}
-
-export async function getClubsAction(): Promise<Awaited<ReturnType<typeof getClubs>>> {
-  await requirePermission("sendNotifications");
-  return getClubs();
 }
 
 export async function updateRoleAction(payload: unknown): Promise<ActionStatusResponse> {
@@ -106,8 +99,12 @@ export async function addPendingUserAction(payload: unknown): Promise<ActionStat
     const session = await requirePermission("manageUsers");
     const parsed = AddPendingUserSchema.safeParse(payload);
     if (!parsed.success) return actionInvalid("pending user");
+    if (parsed.data.clubId) {
+      const club = await getClubById(parsed.data.clubId);
+      if (!club) return actionNotFound("Club");
+    }
     const email = parsed.data.email.toLowerCase();
-    await upsertPendingAssignment(email, parsed.data.role, session.id);
+    await upsertPendingAssignment(email, parsed.data.role, session.id, parsed.data.clubId);
     await sendEmail({
       to: email,
       subject: "You have been added to ERNS",
@@ -116,6 +113,24 @@ export async function addPendingUserAction(payload: unknown): Promise<ActionStat
     return { success: true };
   } catch (error) {
     return toActionResponse(error, "add user");
+  }
+}
+
+export async function setUserClubAction(payload: unknown): Promise<ActionStatusResponse> {
+  try {
+    await requirePermission("manageUsers");
+    const parsed = SetUserClubSchema.safeParse(payload);
+    if (!parsed.success) return actionInvalid("club assignment");
+    const target = await getUserById(parsed.data.userId);
+    if (!target) return actionNotFound("User");
+    if (parsed.data.clubId) {
+      const club = await getClubById(parsed.data.clubId);
+      if (!club) return actionNotFound("Club");
+    }
+    await setUserClub(parsed.data.userId, parsed.data.clubId);
+    return { success: true };
+  } catch (error) {
+    return toActionResponse(error, "assign club");
   }
 }
 

@@ -43,18 +43,22 @@ model PendingRoleAssignment {
   id           String   @id @default(cuid())
   email        String   @unique
   role         Role
+  clubId       String?
+  club         Club?    @relation(fields: [clubId], references: [id])
   assignedById String
   assignedBy   User     @relation("AssignedBy", fields: [assignedById], references: [id])
   assignedAt   DateTime @default(now())
 }
 
 model Club {
-  id            String         @id @default(cuid())
-  name          String         @unique
-  createdAt     DateTime       @default(now())
-  members       User[]
-  events        Event[]
-  notifications Notification[]
+  id                 String                  @id @default(cuid())
+  name               String                  @unique
+  shortName          String?                 @unique
+  createdAt          DateTime                @default(now())
+  members            User[]
+  events             Event[]
+  notifications      Notification[]
+  pendingAssignments PendingRoleAssignment[]
 }
 
 model Event {
