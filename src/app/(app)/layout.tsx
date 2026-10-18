@@ -8,6 +8,7 @@ import { ToastRegion } from "@/components/ui/Toast/Toast";
 import { NavigationProvider } from "@/components/ui/TopProgressBar/navigation-context";
 import { TopProgressBar } from "@/components/ui/TopProgressBar/TopProgressBar";
 import { getUnreadNotificationCount } from "@/features/notifications/queries";
+import { buildNotificationScope } from "@/features/notifications/scope";
 import { auth } from "@/lib/infra/auth";
 
 import styles from "./layout.module.css";
@@ -31,7 +32,7 @@ export default async function AppLayout({ children }: AppLayoutProps) {
   let initialUnreadCount = 0;
   if (session?.user?.id) {
     try {
-      initialUnreadCount = await getUnreadNotificationCount(session.user.id, session.user.clubId);
+      initialUnreadCount = await getUnreadNotificationCount(buildNotificationScope(session.user));
     } catch {
       initialUnreadCount = 0;
     }

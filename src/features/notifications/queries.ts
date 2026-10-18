@@ -4,6 +4,8 @@ import { decodeCursor, encodeCursor } from "@/lib/domain/pagination";
 import { prisma } from "@/lib/infra/prisma";
 import type { PageQuery } from "@/lib/primitives/types";
 
+import type { NotificationScope } from "./scope";
+
 export interface NotificationRow {
   id: string;
   title: string;
@@ -21,19 +23,19 @@ export interface NotificationPage {
 }
 
 export interface NotificationPageParams {
-  userId: string;
-  clubId: string | null;
+  scope: NotificationScope;
   query: PageQuery;
 }
 
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 50;
 
-function buildAudienceFilter(clubId: string | null): Prisma.NotificationWhereInput {
+function buildAudienceFilter(scope: NotificationScope): Prisma.NotificationWhereInput {
+  if (scope.viewAll) return {};
   return {
     OR: [
       { audience: NotificationAudience.ALL },
-      ...(clubId ? [{ audience: NotificationAudience.CLUB, clubId }] : []),
+      ...(scope.clubId ? [{ audience: NotificationAudience.CLUB, clubId: scope.clubId }] : []),
     ],
   };
 }
@@ -75,8 +77,7 @@ function buildCursorFilter(cursor: string | undefined, ascending: boolean) {
 }
 
 export async function getNotificationPage({
-  userId,
-  clubId,
+  scope,
   query,
 }: NotificationPageParams): Promise<NotificationPage> {
   const pageSize = Math.min(Math.max(query.pageSize ?? DEFAULT_PAGE_SIZE, 1), MAX_PAGE_SIZE);
@@ -87,8 +88,8 @@ export async function getNotificationPage({
   const rows = await prisma.notification.findMany({
     where: {
       AND: [
-        buildAudienceFilter(clubId),
-        buildReadStatusFilter(query.filters?.status, userId),
+        buildAudienceFilter(scope),
+        buildReadStatusFilter(query.filters?.status, scope.userId),
         buildSearchFilter(search),
         buildCursorFilter(query.cursor, ascending),
       ],
@@ -97,7 +98,7 @@ export async function getNotificationPage({
     take: pageSize + 1,
     include: {
       club: { select: { name: true, shortName: true } },
-      reads: { where: { userId }, select: { id: true } },
+      reads: { where: { userId: scope.userId }, select: { id: true } },
     },
   });
 
@@ -121,14 +122,13 @@ export async function getNotificationPage({
 }
 
 export async function getUnreadNotificationsForUser(
-  userId: string,
-  clubId: string | null,
+  scope: NotificationScope,
   limit = 10,
 ): Promise<NotificationRow[]> {
   const rows = await prisma.notification.findMany({
     where: {
-      ...buildAudienceFilter(clubId),
-      reads: { none: { userId } },
+      ...buildAudienceFilter(scope),
+      reads: { none: { userId: scope.userId } },
     },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     take: limit,
@@ -148,14 +148,11 @@ export async function getUnreadNotificationsForUser(
   }));
 }
 
-export async function getUnreadNotificationCount(
-  userId: string,
-  clubId: string | null,
-): Promise<number> {
+export async function getUnreadNotificationCount(scope: NotificationScope): Promise<number> {
   return prisma.notification.count({
     where: {
-      ...buildAudienceFilter(clubId),
-      reads: { none: { userId } },
+      ...buildAudienceFilter(scope),
+      reads: { none: { userId: scope.userId } },
     },
   });
 }

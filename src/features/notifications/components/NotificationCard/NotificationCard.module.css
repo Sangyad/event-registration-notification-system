@@ -25,7 +25,7 @@
     flex: 0 0 auto;
     margin-top: 0.35rem;
     border-radius: 50%;
-    background: transparent;
+    background: var(--color-border-default);
   }
 
   .content {
@@ -93,7 +93,6 @@
   }
 
   &.unread {
-    border-left: 0.25rem solid var(--color-brand-accent);
     box-shadow: var(--shadow-sm);
 
     .dot {

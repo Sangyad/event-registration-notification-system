@@ -15,27 +15,27 @@ import {
   type NotificationPage,
 } from "./queries";
 import { MarkReadSchema, NotificationPageQuerySchema, SendNotificationSchema } from "./schemas";
+import { buildNotificationScope } from "./scope";
 
 export async function getNotificationsPageAction(query: PageQuery): Promise<NotificationPage> {
   const session = await requireAuth();
   const parsed = NotificationPageQuerySchema.safeParse(query);
   return getNotificationPage({
-    userId: session.id,
-    clubId: session.clubId,
+    scope: buildNotificationScope(session),
     query: parsed.success ? parsed.data : {},
   });
 }
 
 export async function getUnreadNotificationCountAction(): Promise<number> {
   const session = await requireAuth();
-  return getUnreadNotificationCount(session.id, session.clubId);
+  return getUnreadNotificationCount(buildNotificationScope(session));
 }
 
 export async function getUnreadNotificationsAction(): Promise<
   Awaited<ReturnType<typeof getUnreadNotificationsForUser>>
 > {
   const session = await requireAuth();
-  return getUnreadNotificationsForUser(session.id, session.clubId);
+  return getUnreadNotificationsForUser(buildNotificationScope(session));
 }
 
 export async function markNotificationReadAction(payload: unknown): Promise<ActionStatusResponse> {

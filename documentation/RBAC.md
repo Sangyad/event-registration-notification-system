@@ -71,12 +71,14 @@ ADMIN
 ### Notification
 
 > Sending notifications is an Officer and Admin capability. Reading one's own
-> notifications is available to every authenticated role and is **not** gated
-> by this matrix.
+> notifications (global announcements plus those scoped to the reader's club) is
+> available to every authenticated role and is **not** gated by this matrix.
+> Seeing **every** notification regardless of club is an Admin capability.
 
-| Action | Admin | Officer | Student |
-| :----- | :---: | :-----: | :-----: |
-| CREATE |  YES  |   YES   |   NO    |
+| Action   | Admin | Officer | Student |
+| :------- | :---: | :-----: | :-----: |
+| CREATE   |  YES  |   YES   |   NO    |
+| READ ALL |  YES  |   NO    |   NO    |
 
 ---
 

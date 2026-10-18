@@ -32,7 +32,8 @@ export type Permission =
   | "club.create"
   | "club.update"
   | "club.delete"
-  | "notification.create";
+  | "notification.create"
+  | "notification.read_all";
 
 /**
  * Qualifier set for one matrix row, keyed by the four application roles.
@@ -75,6 +76,7 @@ export const PERMISSION_MATRIX: Record<Permission, Record<Role, boolean>> = {
   "club.delete": cells({ admin: true, officer: false, student: false }),
 
   "notification.create": cells({ admin: true, officer: true, student: false }),
+  "notification.read_all": cells({ admin: true, officer: false, student: false }),
 };
 
 /**
