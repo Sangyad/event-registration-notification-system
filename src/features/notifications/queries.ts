@@ -121,33 +121,6 @@ export async function getNotificationPage({
   };
 }
 
-export async function getUnreadNotificationsForUser(
-  scope: NotificationScope,
-  limit = 10,
-): Promise<NotificationRow[]> {
-  const rows = await prisma.notification.findMany({
-    where: {
-      ...buildAudienceFilter(scope),
-      reads: { none: { userId: scope.userId } },
-    },
-    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-    take: limit,
-    include: {
-      club: { select: { name: true, shortName: true } },
-    },
-  });
-  return rows.map((row) => ({
-    id: row.id,
-    title: row.title,
-    body: row.body,
-    audience: row.audience,
-    clubName: row.club?.name ?? null,
-    clubShortName: row.club?.shortName ?? null,
-    createdAt: row.createdAt,
-    isRead: false,
-  }));
-}
-
 export async function getUnreadNotificationCount(scope: NotificationScope): Promise<number> {
   return prisma.notification.count({
     where: {

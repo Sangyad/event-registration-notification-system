@@ -15,6 +15,7 @@ import { NotificationCard } from "@/features/notifications/components/Notificati
 import { NotificationDetailModal } from "@/features/notifications/components/NotificationDetailModal/NotificationDetailModal";
 import { SendNotificationModal } from "@/features/notifications/components/SendNotificationModal/SendNotificationModal";
 import type { NotificationRow } from "@/features/notifications/queries";
+import { useUnreadCount } from "@/features/notifications/unread-count-context";
 import { toastActionError } from "@/lib/hooks/toast-utils";
 import { useCursorPagination } from "@/lib/hooks/useCursorPagination";
 import { useDebounce } from "@/lib/hooks/useDebounce";
@@ -55,6 +56,7 @@ export function NotificationsFeed({
   const [isComposeOpen, setIsComposeOpen] = useState(false);
   const [selected, setSelected] = useState<NotificationRow | null>(null);
   const debouncedSearch = useDebounce(search, 300);
+  const { decrement } = useUnreadCount();
 
   const { items, setItems, hasMore, isInitialLoad, isLoadingMore, loadMore, refresh } =
     useCursorPagination({
@@ -98,6 +100,7 @@ export function NotificationsFeed({
     setSelected((current) =>
       current && current.id === notification.id ? { ...current, isRead: true } : current,
     );
+    decrement();
   }
 
   const hasActiveFilters = Object.values(filters).some((selected) => selected.length > 0);

@@ -8,6 +8,7 @@ import { FaBars, FaBell, FaBuilding, FaUser, FaUsers, FaX } from "react-icons/fa
 
 import { Button } from "@/components/ui/Button/Button";
 import { useNavigationProgress } from "@/components/ui/TopProgressBar/navigation-context";
+import { useUnreadCount } from "@/features/notifications/unread-count-context";
 import { roleLabels } from "@/features/users/constants";
 import { Role } from "@/generated/prisma/browser";
 import { can, type Permission } from "@/lib/security/rbac";
@@ -43,6 +44,7 @@ export function Sidebar({ initialCollapsed = false, userName, userRole, userImag
   const router = useRouter();
   const { startLoading } = useNavigationProgress();
   const { isOpen, close } = useSidebar();
+  const { count: unreadCount } = useUnreadCount();
 
   const handleToggle = () => {
     const nextState = !collapsed;
@@ -99,21 +101,32 @@ export function Sidebar({ initialCollapsed = false, userName, userRole, userImag
         <nav className={styles.navContainer}>
           {navItems
             .filter((item) => !item.permission || (userRole && can(userRole, item.permission)))
-            .map((item) => (
-              <Button
-                key={item.href}
-                variant="navigation"
-                className={styles.navButton}
-                onPress={() => handleNavClick(item.href)}
-                data-active={pathname.startsWith(item.href)}
-                title={collapsed ? item.label : undefined}
-              >
-                <span>
-                  <item.icon />
-                </span>
-                <span className={styles.navLabel}>{item.label}</span>
-              </Button>
-            ))}
+            .map((item) => {
+              const showBadge = item.href === "/notifications" && unreadCount > 0;
+              return (
+                <Button
+                  key={item.href}
+                  variant="navigation"
+                  className={styles.navButton}
+                  onPress={() => handleNavClick(item.href)}
+                  data-active={pathname.startsWith(item.href)}
+                  title={collapsed ? item.label : undefined}
+                >
+                  <span>
+                    <item.icon />
+                  </span>
+                  <span className={styles.navLabel}>{item.label}</span>
+                  {showBadge && (
+                    <>
+                      <span className={styles.navBadge} aria-hidden="true">
+                        {unreadCount > 99 ? "99+" : unreadCount}
+                      </span>
+                      <span className={styles.srOnly}>{unreadCount} unread</span>
+                    </>
+                  )}
+                </Button>
+              );
+            })}
         </nav>
         <div className={styles.profileSection}>
           <div className={styles.profileAvatar}>

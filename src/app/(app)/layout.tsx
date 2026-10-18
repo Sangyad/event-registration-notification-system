@@ -9,6 +9,7 @@ import { NavigationProvider } from "@/components/ui/TopProgressBar/navigation-co
 import { TopProgressBar } from "@/components/ui/TopProgressBar/TopProgressBar";
 import { getUnreadNotificationCount } from "@/features/notifications/queries";
 import { buildNotificationScope } from "@/features/notifications/scope";
+import { UnreadCountProvider } from "@/features/notifications/unread-count-context";
 import { auth } from "@/lib/infra/auth";
 
 import styles from "./layout.module.css";
@@ -42,24 +43,25 @@ export default async function AppLayout({ children }: AppLayoutProps) {
     <div className={styles.layout}>
       <NavigationProvider>
         <TopProgressBar />
-        <SidebarProvider>
-          <Sidebar
-            initialCollapsed={initialCollapsed}
-            userName={session?.user?.name}
-            userRole={session?.user?.role}
-            userImage={session?.user?.image}
-          />
-          <div className={styles.main}>
-            <Header
-              userImage={session?.user?.image ?? null}
+        <UnreadCountProvider initialCount={initialUnreadCount}>
+          <SidebarProvider>
+            <Sidebar
+              initialCollapsed={initialCollapsed}
               userName={session?.user?.name}
               userRole={session?.user?.role}
-              initialUnreadCount={initialUnreadCount}
+              userImage={session?.user?.image}
             />
-            <main className={styles.content}>{children}</main>
-          </div>
-        </SidebarProvider>
-        <ToastRegion />
+            <div className={styles.main}>
+              <Header
+                userImage={session?.user?.image ?? null}
+                userName={session?.user?.name}
+                userRole={session?.user?.role}
+              />
+              <main className={styles.content}>{children}</main>
+            </div>
+          </SidebarProvider>
+          <ToastRegion />
+        </UnreadCountProvider>
       </NavigationProvider>
     </div>
   );

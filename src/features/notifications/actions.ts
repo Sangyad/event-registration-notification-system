@@ -11,7 +11,6 @@ import {
   getNotificationPage,
   getNotificationRecipients,
   getUnreadNotificationCount,
-  getUnreadNotificationsForUser,
   type NotificationPage,
 } from "./queries";
 import { MarkReadSchema, NotificationPageQuerySchema, SendNotificationSchema } from "./schemas";
@@ -29,13 +28,6 @@ export async function getNotificationsPageAction(query: PageQuery): Promise<Noti
 export async function getUnreadNotificationCountAction(): Promise<number> {
   const session = await requireAuth();
   return getUnreadNotificationCount(buildNotificationScope(session));
-}
-
-export async function getUnreadNotificationsAction(): Promise<
-  Awaited<ReturnType<typeof getUnreadNotificationsForUser>>
-> {
-  const session = await requireAuth();
-  return getUnreadNotificationsForUser(buildNotificationScope(session));
 }
 
 export async function markNotificationReadAction(payload: unknown): Promise<ActionStatusResponse> {
