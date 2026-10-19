@@ -118,7 +118,7 @@ export function ServerDataTable<T extends { id: string }>({
       >
         {renderAddButton && (
           <Button
-            variant="secondary"
+            variant="primary"
             className={styles.addButton}
             aria-label={addButtonLabel}
             onPress={onAddButtonPress}
