@@ -63,19 +63,16 @@ export function ClubsManagement({ initialRows }: ClubsManagementProps) {
 
   return (
     <div className={styles.page}>
-      <div className={styles.heading}>
-        <div>
-          <p className={styles.eyebrow}>Administration</p>
-          <h1>Manage clubs</h1>
-        </div>
-        <Button onPress={() => setAddOpen(true)}>+ Add club</Button>
-      </div>
       <ListToolbar
         search={search}
         onSearchChange={setSearch}
         searchPlaceholder="Search clubs..."
         searchLabel="Search clubs"
-      />
+      >
+        <Button className={styles.addButton} onPress={() => setAddOpen(true)}>
+          + Add club
+        </Button>
+      </ListToolbar>
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead>

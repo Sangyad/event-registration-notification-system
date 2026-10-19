@@ -18,7 +18,7 @@ export default function SignInPage() {
           priority
         />
         <p className={styles.title}>Event Registration &amp; Notification System</p>
-        <h1 className={styles.greetings}>Welcome back</h1>
+        <h1 className={styles.greetings}>Welcome back!</h1>
         <p className={styles.description}>Sign in with your school account to continue.</p>
         <Suspense fallback={null}>
           <SignInForm />

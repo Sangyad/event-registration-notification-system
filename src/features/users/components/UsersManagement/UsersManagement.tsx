@@ -100,13 +100,6 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
 
   return (
     <div className={styles.page}>
-      <div className={styles.heading}>
-        <div>
-          <p className={styles.eyebrow}>Administration</p>
-          <h1>Manage users</h1>
-        </div>
-        <Button onPress={() => setAddOpen(true)}>+ Add user</Button>
-      </div>
       <ListToolbar
         search={search}
         onSearchChange={setSearch}
@@ -115,7 +108,11 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
         filters={userFilters}
         filterValues={filters}
         onFiltersChange={setFilters}
-      />
+      >
+        <Button className={styles.addButton} onPress={() => setAddOpen(true)}>
+          + Add user
+        </Button>
+      </ListToolbar>
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead>

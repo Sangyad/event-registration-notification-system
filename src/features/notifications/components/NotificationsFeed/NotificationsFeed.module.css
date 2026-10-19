@@ -2,28 +2,8 @@
   max-width: 80rem;
   margin: 0 auto;
 
-  .eyebrow {
-    color: var(--color-brand-accent);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-bold);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  h1 {
-    margin-top: var(--space-sm);
-    font-size: var(--font-size-3xl);
-  }
-
-  .heading {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: var(--space-lg);
-  }
-
-  .toolbar {
-    margin-top: var(--space-xl);
+  .addButton {
+    flex-shrink: 0;
   }
 
   .status {
@@ -61,9 +41,8 @@
 /* Mobile overrides */
 @media (max-width: 48rem) {
   .page {
-    .heading {
-      align-items: flex-start;
-      flex-direction: column;
+    .addButton {
+      flex: 1;
     }
   }
 }

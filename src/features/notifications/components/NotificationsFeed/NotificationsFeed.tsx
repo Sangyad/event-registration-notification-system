@@ -109,21 +109,7 @@ export function NotificationsFeed({
 
   return (
     <div className={styles.page}>
-      <div className={styles.heading}>
-        <div>
-          <p className={styles.eyebrow}>Updates</p>
-          <h1>Notifications</h1>
-        </div>
-        {canCompose && (
-          <Button onPress={() => setIsComposeOpen(true)}>
-            <FaPlus aria-hidden="true" />
-            Send notification
-          </Button>
-        )}
-      </div>
-
       <ListToolbar
-        className={styles.toolbar}
         search={search}
         onSearchChange={setSearch}
         searchPlaceholder="Search notifications..."
@@ -131,7 +117,14 @@ export function NotificationsFeed({
         filters={notificationFilters}
         filterValues={filters}
         onFiltersChange={setFilters}
-      />
+      >
+        {canCompose && (
+          <Button className={styles.addButton} onPress={() => setIsComposeOpen(true)}>
+            <FaPlus aria-hidden="true" />
+            Send notification
+          </Button>
+        )}
+      </ListToolbar>
 
       {isInitialLoad ? (
         <div className={styles.status}>
