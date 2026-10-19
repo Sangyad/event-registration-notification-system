@@ -21,7 +21,15 @@ import {
   type ClubOption,
   type ClubPage,
 } from "./queries";
-import { ClubIdSchema, ClubPageQuerySchema, CreateClubSchema, UpdateClubSchema } from "./schemas";
+import {
+  ClubIdSchema,
+  ClubPageQuerySchema,
+  CreateClubSchema,
+  UpdateClubSchema,
+  type ClubIdPayload,
+  type CreateClubPayload,
+  type UpdateClubPayload,
+} from "./schemas";
 
 async function findClubConflict(name: string, shortName: string | null, excludeClubId?: string) {
   const nameMatch = (await findClubsByName(name, excludeClubId))[0];
@@ -43,11 +51,24 @@ async function findClubConflict(name: string, shortName: string | null, excludeC
   return null;
 }
 
+/**
+ * Lists clubs as picker options for the notification composer and user forms.
+ *
+ * @returns Every club as an `{ id, name, shortName }` option, sorted by name.
+ * @throws {ForbiddenError} When the caller holds neither `notification.create` nor `user.update`.
+ */
 export async function getClubOptionsAction(): Promise<ClubOption[]> {
   await requirePermission("notification.create", "user.update");
   return getClubOptions();
 }
 
+/**
+ * Reads a cursor page of clubs for the admin clubs table.
+ *
+ * @param query - Search, cursor, and page-size parameters from the table.
+ * @returns A cursor page of club rows.
+ * @throws When the caller lacks `club.read` or `query` fails validation.
+ */
 export async function getClubPageAction(query: PageQuery): Promise<ClubPage> {
   await requirePermission("club.read");
   const parsed = ClubPageQuerySchema.safeParse(query);
@@ -59,7 +80,14 @@ export async function getClubPageAction(query: PageQuery): Promise<ClubPage> {
   });
 }
 
-export async function createClubAction(payload: unknown): Promise<ActionStatusResponse> {
+/**
+ * Creates a club after checking that its name and short name are unique.
+ *
+ * @param payload - The club write fields (`name`, `shortName`).
+ * @returns `success: true`, or an invalid/conflict envelope.
+ * @throws {ForbiddenError} When the caller lacks `club.create`.
+ */
+export async function createClubAction(payload: CreateClubPayload): Promise<ActionStatusResponse> {
   try {
     await requirePermission("club.create");
     const parsed = CreateClubSchema.safeParse(payload);
@@ -73,7 +101,14 @@ export async function createClubAction(payload: unknown): Promise<ActionStatusRe
   }
 }
 
-export async function updateClubAction(payload: unknown): Promise<ActionStatusResponse> {
+/**
+ * Updates an existing club while keeping name and short-name uniqueness.
+ *
+ * @param payload - The club id plus write fields.
+ * @returns `success: true`, or an invalid/not-found/conflict envelope.
+ * @throws {ForbiddenError} When the caller lacks `club.update`.
+ */
+export async function updateClubAction(payload: UpdateClubPayload): Promise<ActionStatusResponse> {
   try {
     await requirePermission("club.update");
     const parsed = UpdateClubSchema.safeParse(payload);
@@ -97,7 +132,14 @@ export async function updateClubAction(payload: unknown): Promise<ActionStatusRe
   }
 }
 
-export async function deleteClubAction(payload: unknown): Promise<ActionStatusResponse> {
+/**
+ * Deletes a club only when no members, events, or notifications reference it.
+ *
+ * @param payload - The `clubId` to delete.
+ * @returns `success: true`, or an invalid/not-found/conflict envelope.
+ * @throws {ForbiddenError} When the caller lacks `club.delete`.
+ */
+export async function deleteClubAction(payload: ClubIdPayload): Promise<ActionStatusResponse> {
   try {
     await requirePermission("club.delete");
     const parsed = ClubIdSchema.safeParse(payload);

@@ -19,10 +19,12 @@ export const CreateClubSchema = z.object({
 
 export const UpdateClubSchema = CreateClubSchema.extend({ clubId: cuidSchema });
 
-export type ClubFormPayload = z.input<typeof CreateClubSchema> & { clubId?: string };
-
 export const ClubPageQuerySchema = z.object({
   search: optionalText(100, "Search", true),
   cursor: z.string().max(500).optional(),
   pageSize: z.number().int().min(1).max(50).optional(),
 });
+
+export type ClubIdPayload = z.input<typeof ClubIdSchema>;
+export type CreateClubPayload = z.input<typeof CreateClubSchema>;
+export type UpdateClubPayload = z.input<typeof UpdateClubSchema>;

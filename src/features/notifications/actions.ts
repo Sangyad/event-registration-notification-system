@@ -17,9 +17,18 @@ import {
   MarkNotificationReadSchema,
   NotificationPageQuerySchema,
   SendNotificationSchema,
+  type MarkNotificationReadPayload,
+  type SendNotificationPayload,
 } from "./schemas";
 import { buildNotificationScope } from "./scope";
 
+/**
+ * Reads a cursor page of notifications visible to the signed-in user.
+ *
+ * @param query - Search, sort, filter, cursor, and page-size parameters.
+ * @returns A cursor page of notification rows scoped to the caller's role and club.
+ * @throws When the caller lacks `notification.read`.
+ */
 export async function getNotificationPageAction(query: PageQuery): Promise<NotificationPage> {
   const session = await requirePermission("notification.read");
   const parsed = NotificationPageQuerySchema.safeParse(query);
@@ -29,12 +38,27 @@ export async function getNotificationPageAction(query: PageQuery): Promise<Notif
   });
 }
 
+/**
+ * Counts unread notifications visible to the signed-in user.
+ *
+ * @returns The unread notification count for the caller's scope.
+ * @throws When the caller lacks `notification.read`.
+ */
 export async function getUnreadNotificationCountAction(): Promise<number> {
   const session = await requirePermission("notification.read");
   return getUnreadNotificationCount(buildNotificationScope(session));
 }
 
-export async function markNotificationReadAction(payload: unknown): Promise<ActionStatusResponse> {
+/**
+ * Marks a single notification as read for the signed-in user.
+ *
+ * @param payload - The `notificationId` to mark read.
+ * @returns `success: true`, or an invalid envelope.
+ * @throws {UnauthorizedError} When the caller has no session.
+ */
+export async function markNotificationReadAction(
+  payload: MarkNotificationReadPayload,
+): Promise<ActionStatusResponse> {
   try {
     const session = await requireAuth();
     const parsed = MarkNotificationReadSchema.safeParse(payload);
@@ -46,7 +70,16 @@ export async function markNotificationReadAction(payload: unknown): Promise<Acti
   }
 }
 
-export async function sendNotificationAction(payload: unknown): Promise<ActionStatusResponse> {
+/**
+ * Creates a notification and emails the matching active recipients.
+ *
+ * @param payload - Title, body, audience, and optional club id.
+ * @returns `success: true`, or an invalid envelope.
+ * @throws {ForbiddenError} When the caller lacks `notification.create`.
+ */
+export async function sendNotificationAction(
+  payload: SendNotificationPayload,
+): Promise<ActionStatusResponse> {
   try {
     const session = await requirePermission("notification.create");
     const parsed = SendNotificationSchema.safeParse(payload);

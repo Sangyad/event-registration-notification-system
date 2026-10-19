@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Form } from "react-aria-components";
-import type { z } from "zod";
 
 import { Button } from "@/components/ui/Button/Button";
 import { Modal } from "@/components/ui/Modal/Modal";
@@ -11,7 +10,7 @@ import { getClubOptionsAction } from "@/features/clubs/actions";
 import { formatClubLabel } from "@/features/clubs/constants";
 import type { ClubOption } from "@/features/clubs/queries";
 import { setUserClubAction } from "@/features/users/actions";
-import { SetUserClubSchema } from "@/features/users/schemas";
+import { SetUserClubSchema, type SetUserClubPayload } from "@/features/users/schemas";
 import { toastError } from "@/lib/hooks/toast-utils";
 import { useModalForm } from "@/lib/hooks/useModalForm";
 
@@ -39,7 +38,7 @@ export function AssignClubModal({
   const [clubId, setClubId] = useState<string | null>(initialClubId);
   const [clubs, setClubs] = useState<ClubOption[]>([]);
 
-  const { isPending, submitForm, handleCancel } = useModalForm<z.input<typeof SetUserClubSchema>>({
+  const { isPending, submitForm, handleCancel } = useModalForm<SetUserClubPayload>({
     submit: setUserClubAction,
     onOpenChange,
     onSuccess,

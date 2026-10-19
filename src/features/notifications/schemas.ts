@@ -48,3 +48,6 @@ export const NotificationPageQuerySchema = z.object({
     })
     .optional(),
 });
+
+export type SendNotificationPayload = z.input<typeof SendNotificationSchema>;
+export type MarkNotificationReadPayload = z.input<typeof MarkNotificationReadSchema>;

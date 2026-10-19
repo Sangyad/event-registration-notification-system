@@ -114,9 +114,9 @@ environment: Nix flake (pinned toolchain; non-Nix contributors install Node/pnpm
 
 Functions are named after the domain data they operate on, with the layer encoded by suffix rather than by prefix.
 
-- **Queries** (`queries.ts`) - no `Action` suffix. Reads use `get<Entity>...`; paginated lists return `CursorPage` and are
-  named `get<Entity>Page(query)`; single records `get<Entity>ById(id)`; lookup lists `get<Entity>Options()`. Aggregates
-  use `count<Entity>...`; non-unique duplicate/lookup scans use `find<Entity>By<Field>(...)`.
+- **Queries** (`queries.ts`) - no `Action` suffix. Reads use `get<Entity>...`; paginated lists return `CursorPage` and
+  are named `get<Entity>Page(query)`; single records `get<Entity>ById(id)`; lookup lists `get<Entity>Options()`.
+  Aggregates use `count<Entity>...`; non-unique duplicate/lookup scans use `find<Entity>By<Field>(...)`.
 - **Mutations** (`mutations.ts`) - no `Action` suffix. Use the operation verb plus entity: `create<Entity>`,
   `update<Entity>`, `delete<Entity>`, `set<Entity><Field>`, `mark<Entity><State>`, `upsert<Entity>`, `ensure<Entity>`.
   Always use the same noun for the same Prisma model across all four operations.
@@ -124,9 +124,14 @@ Functions are named after the domain data they operate on, with the layer encode
   query/mutation name (`updateUserRole` -> `updateUserRoleAction`, `getNotificationPage` -> `getNotificationPageAction`).
   Actions that orchestrate additional work keep the user-facing intent verb while still wrapping the write
   (`sendNotificationAction` creates and emails; `addPendingUserAction` upserts a pending role assignment).
-- **Payloads** - complex writes take a single named payload rather than positional arguments, named
-  `<Entity><Operation>Payload` (e.g. `ClubWritePayload`, `ClubUpdatePayload`, `NotificationCreatePayload`,
+- **Mutation payloads** - complex writes to `mutations.ts` take a single named payload rather than positional arguments,
+  named `<Entity><Operation>Payload` (e.g. `ClubWritePayload`, `ClubUpdatePayload`, `NotificationCreatePayload`,
   `PendingRoleAssignmentPayload`). Two-argument `(id, value)` toggles and one-argument deletes stay positional.
+- **Action input types** - exported Server Actions never take `unknown` payloads. Derive and export `<SchemaName>Payload
+= z.input<typeof Schema>` from the feature's `schemas.ts`, then use that type in both the action signature and the
+  client form hook (e.g. `CreateClubPayload`, `UpdateUserRolePayload`). `z.input` is the client-facing shape before
+  defaults/transforms; the action still calls `safeParse` and uses the parsed output. Paginated read actions driven by
+  `ServerDataTable` keep the shared `PageQuery` parameter instead.
 
 Type and schema names follow the function they belong to:
 
@@ -134,6 +139,8 @@ Type and schema names follow the function they belong to:
 - Query parameter types mirror their query function: `<Entity>PageQuery` (e.g. `getClubPage` -> `ClubPageQuery`).
 - Write schemas are `<Operation><Entity>Schema` (e.g. `UpdateUserRoleSchema`, `MarkNotificationReadSchema`); list query
   schemas are `<Entity>PageQuerySchema` (e.g. `ClubPageQuerySchema`, `UserManagementPageQuerySchema`).
+- Keep runtime schemas grouped at the top of `schemas.ts`; group the derived `<SchemaName>Payload` type aliases at the
+  bottom of the file.
 - Infrastructure getters (e.g. `getAuthAdapterClient`) live in `src/lib/infra/`, never in `mutations.ts`.
 
 ### Execution protocol

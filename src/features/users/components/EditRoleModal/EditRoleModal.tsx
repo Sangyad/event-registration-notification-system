@@ -2,13 +2,12 @@
 
 import { useState } from "react";
 import { Form } from "react-aria-components";
-import type { z } from "zod";
 
 import { Button } from "@/components/ui/Button/Button";
 import { Modal } from "@/components/ui/Modal/Modal";
 import { Select, SelectItem } from "@/components/ui/Select/Select";
 import { updateUserRoleAction } from "@/features/users/actions";
-import { UpdateUserRoleSchema } from "@/features/users/schemas";
+import { UpdateUserRoleSchema, type UpdateUserRolePayload } from "@/features/users/schemas";
 import { Role } from "@/generated/prisma/browser";
 import { useModalForm } from "@/lib/hooks/useModalForm";
 import { createFieldValidator } from "@/lib/validation/form-utils";
@@ -37,9 +36,7 @@ export function EditRoleModal({
 }: EditRoleModalProps) {
   const [role, setRole] = useState<AssignableRole>(initialRole);
 
-  const { isPending, submitForm, handleCancel } = useModalForm<
-    z.input<typeof UpdateUserRoleSchema>
-  >({
+  const { isPending, submitForm, handleCancel } = useModalForm<UpdateUserRolePayload>({
     submit: updateUserRoleAction,
     onOpenChange,
     onSuccess,

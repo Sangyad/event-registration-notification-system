@@ -11,7 +11,10 @@ import { getClubOptionsAction } from "@/features/clubs/actions";
 import { formatClubLabel } from "@/features/clubs/constants";
 import type { ClubOption } from "@/features/clubs/queries";
 import { sendNotificationAction } from "@/features/notifications/actions";
-import { SendNotificationSchema } from "@/features/notifications/schemas";
+import {
+  SendNotificationSchema,
+  type SendNotificationPayload,
+} from "@/features/notifications/schemas";
 import { NotificationAudience } from "@/generated/prisma/browser";
 import { toastError } from "@/lib/hooks/toast-utils";
 import { useModalForm } from "@/lib/hooks/useModalForm";
@@ -43,7 +46,7 @@ export function SendNotificationModal({
     setClubId(null);
   };
 
-  const { isPending, submitForm, handleCancel } = useModalForm({
+  const { isPending, submitForm, handleCancel } = useModalForm<SendNotificationPayload>({
     submit: sendNotificationAction,
     onOpenChange,
     onSuccess,

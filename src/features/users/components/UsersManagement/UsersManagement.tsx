@@ -238,7 +238,9 @@ export function UsersManagement({ initialRows, initialCursor }: UsersManagementP
         confirmLabel="Cancel invitation"
         onConfirm={async () => {
           if (!invitationRow) return;
-          const result = await cancelPendingInvitationAction({ userId: invitationRow.id });
+          const result = await cancelPendingInvitationAction({
+            roleAssignmentId: invitationRow.id,
+          });
           if (!result.success) {
             toastActionError(result, "cancel invitation");
             return;

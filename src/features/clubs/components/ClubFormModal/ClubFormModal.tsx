@@ -8,7 +8,11 @@ import { Modal } from "@/components/ui/Modal/Modal";
 import { TextField } from "@/components/ui/TextField/TextField";
 import { createClubAction, updateClubAction } from "@/features/clubs/actions";
 import type { ClubOption } from "@/features/clubs/queries";
-import { CreateClubSchema, UpdateClubSchema, type ClubFormPayload } from "@/features/clubs/schemas";
+import {
+  CreateClubSchema,
+  UpdateClubSchema,
+  type CreateClubPayload,
+} from "@/features/clubs/schemas";
 import { useModalForm } from "@/lib/hooks/useModalForm";
 import { createFieldValidator, optionalString, requiredString } from "@/lib/validation/form-utils";
 
@@ -30,8 +34,17 @@ export function ClubFormModal({ isOpen, onOpenChange, onSuccess, club }: ClubFor
     setShortName(club?.shortName ?? "");
   };
 
-  const { isPending, submitForm, handleCancel } = useModalForm<ClubFormPayload>({
-    submit: club ? updateClubAction : createClubAction,
+  const submit = (payload: CreateClubPayload) =>
+    club
+      ? updateClubAction({
+          clubId: club.id,
+          name: payload.name,
+          shortName: payload.shortName,
+        })
+      : createClubAction(payload);
+
+  const { isPending, submitForm, handleCancel } = useModalForm<CreateClubPayload>({
+    submit,
     onOpenChange,
     onSuccess,
     reset,
@@ -46,11 +59,11 @@ export function ClubFormModal({ isOpen, onOpenChange, onSuccess, club }: ClubFor
   async function handleSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
     if (isPending) return;
-    const payload: ClubFormPayload = {
+    const payload: CreateClubPayload = {
       name: requiredString(name),
       shortName: optionalString(shortName),
     };
-    await submitForm(club ? { ...payload, clubId: club.id } : payload);
+    await submitForm(payload);
   }
 
   return (

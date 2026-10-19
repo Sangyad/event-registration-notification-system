@@ -10,6 +10,8 @@ const clubIdSchema = z.string().regex(/^c[a-z0-9]{24}$/, "Invalid club identifie
 
 export const UserIdSchema = z.object({ userId: cuidSchema });
 
+export const PendingRoleAssignmentIdSchema = z.object({ roleAssignmentId: cuidSchema });
+
 export const SetUserActiveSchema = UserIdSchema.extend({ isActive: z.boolean() });
 
 export const UpdateUserRoleSchema = z.object({
@@ -45,3 +47,9 @@ export const UserManagementPageQuerySchema = z.object({
     })
     .optional(),
 });
+
+export type PendingRoleAssignmentIdPayload = z.input<typeof PendingRoleAssignmentIdSchema>;
+export type SetUserActivePayload = z.input<typeof SetUserActiveSchema>;
+export type UpdateUserRolePayload = z.input<typeof UpdateUserRoleSchema>;
+export type AddPendingUserPayload = z.input<typeof AddPendingUserSchema>;
+export type SetUserClubPayload = z.input<typeof SetUserClubSchema>;

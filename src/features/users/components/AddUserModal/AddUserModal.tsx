@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Form } from "react-aria-components";
-import type { z } from "zod";
 
 import { Button } from "@/components/ui/Button/Button";
 import { Modal } from "@/components/ui/Modal/Modal";
@@ -12,7 +11,7 @@ import { getClubOptionsAction } from "@/features/clubs/actions";
 import { formatClubLabel, LITS_CLUB_NAME } from "@/features/clubs/constants";
 import type { ClubOption } from "@/features/clubs/queries";
 import { addPendingUserAction } from "@/features/users/actions";
-import { AddPendingUserSchema } from "@/features/users/schemas";
+import { AddPendingUserSchema, type AddPendingUserPayload } from "@/features/users/schemas";
 import { Role } from "@/generated/prisma/browser";
 import { toastError } from "@/lib/hooks/toast-utils";
 import { useModalForm } from "@/lib/hooks/useModalForm";
@@ -43,9 +42,7 @@ export function AddUserModal({ isOpen, onOpenChange, onSuccess }: AddUserModalPr
     setClubId(null);
   };
 
-  const { isPending, submitForm, handleCancel } = useModalForm<
-    z.input<typeof AddPendingUserSchema>
-  >({
+  const { isPending, submitForm, handleCancel } = useModalForm<AddPendingUserPayload>({
     submit: addPendingUserAction,
     onOpenChange,
     onSuccess,
