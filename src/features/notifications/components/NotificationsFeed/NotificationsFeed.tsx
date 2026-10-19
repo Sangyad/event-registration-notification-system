@@ -66,6 +66,7 @@ export function NotificationsFeed({
       initialCursor,
     });
 
+  const listRef = useRef<HTMLDivElement | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const loadMoreRef = useRef(loadMore);
   useEffect(() => {
@@ -73,13 +74,14 @@ export function NotificationsFeed({
   });
 
   useEffect(() => {
+    const root = listRef.current;
     const node = sentinelRef.current;
-    if (!node || !hasMore) return;
+    if (!root || !node || !hasMore) return;
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) loadMoreRef.current();
       },
-      { rootMargin: "240px" },
+      { root, rootMargin: "240px" },
     );
     observer.observe(node);
     return () => observer.disconnect();
@@ -133,7 +135,7 @@ export function NotificationsFeed({
       ) : isEmpty ? (
         <p className={styles.empty}>{emptyMessage}</p>
       ) : (
-        <div className={styles.list}>
+        <div ref={listRef} className={styles.list}>
           {items.map((notification) => (
             <NotificationCard
               key={notification.id}

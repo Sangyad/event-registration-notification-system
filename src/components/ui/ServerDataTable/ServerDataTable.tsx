@@ -9,8 +9,9 @@ import { DataTable, type ColumnDef } from "@/components/ui/DataTable/DataTable";
 import { ListToolbar } from "@/components/ui/ListToolbar/ListToolbar";
 import { ProgressCircle } from "@/components/ui/ProgressCircle/ProgressCircle";
 import type { FilterDefinition } from "@/components/ui/TableFilter/TableFilter";
+import type { CursorPage } from "@/lib/domain/pagination";
 import { toSortQuery } from "@/lib/domain/sort";
-import { useCursorPagination, type CursorPage } from "@/lib/hooks/useCursorPagination";
+import { useCursorPagination } from "@/lib/hooks/useCursorPagination";
 import { useDebounce } from "@/lib/hooks/useDebounce";
 import type { FilterValues, PageQuery } from "@/lib/primitives/types";
 

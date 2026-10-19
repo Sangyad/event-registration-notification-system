@@ -23,6 +23,6 @@ export type ClubFormPayload = z.input<typeof CreateClubSchema> & { clubId?: stri
 
 export const ClubManagementQuerySchema = z.object({
   search: optionalText(100, "Search", true),
+  cursor: z.string().max(500).optional(),
+  pageSize: z.number().int().min(1).max(50).optional(),
 });
-
-export type ClubManagementQueryInput = z.input<typeof ClubManagementQuerySchema>;

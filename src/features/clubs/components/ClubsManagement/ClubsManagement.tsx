@@ -1,120 +1,74 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { FaPenToSquare, FaTrash } from "react-icons/fa6";
 
 import { Button } from "@/components/ui/Button/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog/ConfirmDialog";
-import { ListToolbar } from "@/components/ui/ListToolbar/ListToolbar";
-import { deleteClubAction, getClubRowsAction } from "@/features/clubs/actions";
+import type { ColumnDef } from "@/components/ui/DataTable/DataTable";
+import { ServerDataTable } from "@/components/ui/ServerDataTable/ServerDataTable";
+import { deleteClubAction, getClubPageAction } from "@/features/clubs/actions";
 import { ClubFormModal } from "@/features/clubs/components/ClubFormModal/ClubFormModal";
 import { ClubLabel } from "@/features/clubs/components/ClubLabel/ClubLabel";
 import type { ClubRow } from "@/features/clubs/queries";
-import { toastActionError, toastError, toastSuccess } from "@/lib/hooks/toast-utils";
-import { useDebounce } from "@/lib/hooks/useDebounce";
+import { toastActionError, toastSuccess } from "@/lib/hooks/toast-utils";
 
 import styles from "./ClubsManagement.module.css";
 
 interface ClubsManagementProps {
   initialRows: ClubRow[];
+  initialCursor: string | null;
 }
 
-export function ClubsManagement({ initialRows }: ClubsManagementProps) {
-  const [rows, setRows] = useState(initialRows);
-  const [search, setSearch] = useState("");
+export function ClubsManagement({ initialRows, initialCursor }: ClubsManagementProps) {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [addOpen, setAddOpen] = useState(false);
   const [editClub, setEditClub] = useState<ClubRow | null>(null);
   const [deleteRow, setDeleteRow] = useState<ClubRow | null>(null);
 
-  const debouncedSearch = useDebounce(search, 300);
-  const skipInitialFetch = useRef(true);
-
-  useEffect(() => {
-    if (skipInitialFetch.current) {
-      skipInitialFetch.current = false;
-      return;
-    }
-
-    let cancelled = false;
-
-    async function load() {
-      try {
-        const result = await getClubRowsAction({ search: debouncedSearch });
-        if (!cancelled) setRows(result);
-      } catch {
-        if (!cancelled) {
-          toastError(
-            "Failed to refresh clubs",
-            "We couldn't retrieve the club list. Please try again.",
-          );
-        }
-      }
-    }
-
-    void load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [debouncedSearch, refreshTrigger]);
-
   const refresh = () => setRefreshTrigger((trigger) => trigger + 1);
+
+  const columns: ColumnDef<ClubRow>[] = [
+    {
+      id: "name",
+      name: "Club",
+      isRowHeader: true,
+      render: (_value, row) => <ClubLabel name={row.name} shortName={row.shortName} />,
+    },
+    { id: "memberCount", name: "Members" },
+    { id: "eventCount", name: "Events" },
+    {
+      id: "id",
+      name: "Actions",
+      render: (_value, row) => (
+        <div className={styles.actions}>
+          <Button variant="ghost" aria-label="Edit club" onPress={() => setEditClub(row)}>
+            <FaPenToSquare aria-hidden="true" className={styles.actionIcon} />
+          </Button>
+          <Button variant="ghost" aria-label="Delete club" onPress={() => setDeleteRow(row)}>
+            <FaTrash aria-hidden="true" className={styles.actionIcon} />
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className={styles.page}>
-      <ListToolbar
-        search={search}
-        onSearchChange={setSearch}
+      <ServerDataTable
+        fetchAction={getClubPageAction}
+        columns={columns}
+        initialRows={initialRows}
+        initialCursor={initialCursor}
         searchPlaceholder="Search clubs..."
         searchLabel="Search clubs"
-      >
-        <Button className={styles.addButton} onPress={() => setAddOpen(true)}>
-          + Add club
-        </Button>
-      </ListToolbar>
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Club</th>
-              <th>Members</th>
-              <th>Events</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id}>
-                <td>
-                  <ClubLabel name={row.name} shortName={row.shortName} />
-                </td>
-                <td>{row.memberCount}</td>
-                <td>{row.eventCount}</td>
-                <td className={styles.actions}>
-                  <Button variant="ghost" aria-label="Edit club" onPress={() => setEditClub(row)}>
-                    <FaPenToSquare aria-hidden="true" className={styles.actionIcon} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    aria-label="Delete club"
-                    onPress={() => setDeleteRow(row)}
-                  >
-                    <FaTrash aria-hidden="true" className={styles.actionIcon} />
-                  </Button>
-                </td>
-              </tr>
-            ))}
-            {rows.length === 0 && (
-              <tr>
-                <td colSpan={4} className={styles.empty}>
-                  No clubs match the current search.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+        selectionMode="none"
+        renderAddButton
+        addButtonLabel="Add club"
+        onAddButtonPress={() => setAddOpen(true)}
+        refreshTrigger={refreshTrigger}
+        emptyContent="No clubs yet"
+      />
       <ClubFormModal isOpen={addOpen} onOpenChange={setAddOpen} onSuccess={refresh} />
       {editClub && (
         <ClubFormModal

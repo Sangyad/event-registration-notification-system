@@ -36,6 +36,8 @@ export const UserStatusFilterSchema = z.enum(["active", "inactive", "pending"]);
 
 export const UserManagementQuerySchema = z.object({
   search: optionalText(100, "Search", true),
+  cursor: z.string().max(500).optional(),
+  pageSize: z.number().int().min(1).max(50).optional(),
   filters: z
     .object({
       role: z.array(UserRoleFilterSchema).optional(),
@@ -43,5 +45,3 @@ export const UserManagementQuerySchema = z.object({
     })
     .optional(),
 });
-
-export type UserManagementQueryInput = z.input<typeof UserManagementQuerySchema>;

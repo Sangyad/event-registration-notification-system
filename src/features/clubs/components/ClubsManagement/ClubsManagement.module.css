@@ -1,70 +1,26 @@
 .page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
   max-width: 80rem;
   margin: 0 auto;
 
-  .addButton {
-    flex-shrink: 0;
-  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
 
-  .tableWrap {
-    margin-top: var(--space-2xl);
-    overflow-x: auto;
-    border: 1px solid var(--color-border-subtle);
-    border-radius: var(--radius-md);
-    background: var(--color-surface-bg);
-
-    .table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-
-      th,
-      td {
-        padding: var(--space-md) var(--space-lg);
-        border-bottom: 1px solid var(--color-border-subtle);
-        vertical-align: middle;
-      }
-
-      th {
-        color: var(--color-text-muted);
-        font-size: var(--font-size-sm);
-        font-weight: var(--font-weight-medium);
-      }
-
-      .empty {
-        text-align: center;
-        color: var(--color-text-muted);
-      }
-
-      .actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--space-sm);
-
-        .actionIcon {
-          width: var(--icon-size-sm);
-          height: var(--icon-size-sm);
-        }
-      }
+    .actionIcon {
+      width: var(--icon-size-sm);
+      height: var(--icon-size-sm);
     }
   }
 }
 
+/* Mobile overrides */
 @media (max-width: 48rem) {
   .page {
-    .addButton {
-      flex: 1;
-    }
-
-    .tableWrap {
-      .table {
-        th:nth-child(2),
-        td:nth-child(2),
-        th:nth-child(3),
-        td:nth-child(3) {
-          display: none;
-        }
-      }
-    }
+    height: auto;
   }
 }

@@ -10,15 +10,9 @@ import {
   type SetStateAction,
 } from "react";
 
-import { appendPage } from "@/lib/domain/pagination";
+import { appendPage, type CursorPage } from "@/lib/domain/pagination";
 import { toastError } from "@/lib/hooks/toast-utils";
 import type { PageQuery } from "@/lib/primitives/types";
-
-/** A single cursor page as returned by a list Server Action. */
-export interface CursorPage<T> {
-  rows: T[];
-  nextCursor: string | null;
-}
 
 /** Query parameters without the cursor/pageSize, which the hook manages. */
 type ListQuery = Omit<PageQuery, "cursor" | "pageSize">;

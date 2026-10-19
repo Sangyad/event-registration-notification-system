@@ -1,19 +1,20 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { FaBan, FaPencil, FaPeopleGroup, FaUserCheck } from "react-icons/fa6";
 
 import { Button } from "@/components/ui/Button/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog/ConfirmDialog";
-import { ListToolbar } from "@/components/ui/ListToolbar/ListToolbar";
+import type { ColumnDef } from "@/components/ui/DataTable/DataTable";
+import { ServerDataTable } from "@/components/ui/ServerDataTable/ServerDataTable";
 import { StatusBadge } from "@/components/ui/StatusBadge/StatusBadge";
 import type { FilterDefinition } from "@/components/ui/TableFilter/TableFilter";
 import { Tooltip, TooltipTrigger } from "@/components/ui/Tooltip/Tooltip";
 import { ClubLabel } from "@/features/clubs/components/ClubLabel/ClubLabel";
 import {
   cancelPendingInvitationAction,
-  getUserManagementRowsAction,
+  getUserManagementPageAction,
   setActiveAction,
 } from "@/features/users/actions";
 import { AddUserModal } from "@/features/users/components/AddUserModal/AddUserModal";
@@ -22,18 +23,21 @@ import { EditRoleModal } from "@/features/users/components/EditRoleModal/EditRol
 import { roleLabels } from "@/features/users/constants";
 import type { UserManagementRow } from "@/features/users/queries";
 import { Role } from "@/generated/prisma/browser";
-import { toastActionError, toastError, toastSuccess } from "@/lib/hooks/toast-utils";
-import { useDebounce } from "@/lib/hooks/useDebounce";
-import type { FilterValues } from "@/lib/primitives/types";
+import { toastActionError, toastSuccess } from "@/lib/hooks/toast-utils";
 
 import styles from "./UsersManagement.module.css";
 
 interface UsersManagementProps {
   initialRows: UserManagementRow[];
+  initialCursor: string | null;
 }
 
-const roles = [Role.STUDENT, Role.OFFICER, Role.ADMIN];
-type AssignableRole = (typeof roles)[number];
+const assignableRoles = [Role.STUDENT, Role.OFFICER, Role.ADMIN] as const;
+type AssignableRole = (typeof assignableRoles)[number];
+
+function isAssignableRole(role: Role): role is AssignableRole {
+  return assignableRoles.some((assignable) => assignable === role);
+}
 
 const userFilters: FilterDefinition[] = [
   {
@@ -52,11 +56,8 @@ const userFilters: FilterDefinition[] = [
   },
 ];
 
-export function UsersManagement({ initialRows }: UsersManagementProps) {
+export function UsersManagement({ initialRows, initialCursor }: UsersManagementProps) {
   const router = useRouter();
-  const [rows, setRows] = useState(initialRows);
-  const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState<FilterValues>({});
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [addOpen, setAddOpen] = useState(false);
   const [roleRow, setRoleRow] = useState<UserManagementRow | null>(null);
@@ -64,151 +65,102 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
   const [statusRow, setStatusRow] = useState<UserManagementRow | null>(null);
   const [invitationRow, setInvitationRow] = useState<UserManagementRow | null>(null);
 
-  const debouncedSearch = useDebounce(search, 300);
-  const skipInitialFetch = useRef(true);
-
-  useEffect(() => {
-    if (skipInitialFetch.current) {
-      skipInitialFetch.current = false;
-      return;
-    }
-
-    let cancelled = false;
-
-    async function load() {
-      try {
-        const result = await getUserManagementRowsAction({ search: debouncedSearch, filters });
-        if (!cancelled) setRows(result);
-      } catch {
-        if (!cancelled) {
-          toastError(
-            "Failed to refresh users",
-            "We couldn't retrieve the user list. Please try again.",
-          );
-        }
-      }
-    }
-
-    void load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [debouncedSearch, filters, refreshTrigger]);
-
   const refresh = () => setRefreshTrigger((trigger) => trigger + 1);
+
+  const columns: ColumnDef<UserManagementRow>[] = [
+    { id: "name", name: "Name", isRowHeader: true },
+    { id: "email", name: "Email" },
+    {
+      id: "role",
+      name: "Role",
+      render: (_value, row) => roleLabels[row.role],
+    },
+    {
+      id: "clubName",
+      name: "Club",
+      render: (_value, row) =>
+        row.clubName ? <ClubLabel name={row.clubName} shortName={row.clubShortName} /> : "—",
+    },
+    {
+      id: "isActive",
+      name: "Status",
+      render: (_value, row) =>
+        row.kind === "pending" ? (
+          <StatusBadge variant="pending">Pending</StatusBadge>
+        ) : row.isActive ? (
+          <StatusBadge variant="done">Active</StatusBadge>
+        ) : (
+          <StatusBadge variant="danger">Inactive</StatusBadge>
+        ),
+    },
+    {
+      id: "id",
+      name: "Actions",
+      render: (_value, row) => (
+        <div className={styles.actions}>
+          {row.kind === "pending" ? (
+            <Button variant="ghost" onPress={() => setInvitationRow(row)}>
+              Cancel invitation
+            </Button>
+          ) : (
+            <>
+              <TooltipTrigger>
+                <Button
+                  variant="ghost"
+                  aria-label="Edit role"
+                  isDisabled={row.role === Role.DEV}
+                  onPress={() => setRoleRow(row)}
+                >
+                  <FaPencil aria-hidden="true" className={styles.actionIcon} />
+                </Button>
+                <Tooltip>
+                  {row.role === Role.DEV ? "Developer role cannot be edited" : "Edit role"}
+                </Tooltip>
+              </TooltipTrigger>
+              <TooltipTrigger>
+                <Button variant="ghost" aria-label="Assign club" onPress={() => setClubRow(row)}>
+                  <FaPeopleGroup aria-hidden="true" className={styles.actionIcon} />
+                </Button>
+                <Tooltip>Assign club</Tooltip>
+              </TooltipTrigger>
+              <TooltipTrigger>
+                <Button
+                  variant="ghost"
+                  aria-label={row.isActive ? "Deactivate user" : "Reactivate user"}
+                  onPress={() => setStatusRow(row)}
+                >
+                  {row.isActive ? (
+                    <FaBan aria-hidden="true" className={styles.actionIcon} />
+                  ) : (
+                    <FaUserCheck aria-hidden="true" className={styles.actionIcon} />
+                  )}
+                </Button>
+                <Tooltip>{row.isActive ? "Deactivate" : "Reactivate"}</Tooltip>
+              </TooltipTrigger>
+            </>
+          )}
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className={styles.page}>
-      <ListToolbar
-        search={search}
-        onSearchChange={setSearch}
+      <ServerDataTable
+        fetchAction={getUserManagementPageAction}
+        columns={columns}
+        initialRows={initialRows}
+        initialCursor={initialCursor}
         searchPlaceholder="Search users..."
         searchLabel="Search users"
         filters={userFilters}
-        filterValues={filters}
-        onFiltersChange={setFilters}
-      >
-        <Button className={styles.addButton} onPress={() => setAddOpen(true)}>
-          + Add user
-        </Button>
-      </ListToolbar>
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Club</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr
-                key={`${row.kind}-${row.id}`}
-                className={row.kind === "pending" ? styles.pending : undefined}
-              >
-                <td>{row.name ?? "—"}</td>
-                <td>{row.email}</td>
-                <td>{roleLabels[row.role]}</td>
-                <td>
-                  {row.clubName ? (
-                    <ClubLabel name={row.clubName} shortName={row.clubShortName} />
-                  ) : (
-                    "—"
-                  )}
-                </td>
-                <td>
-                  {row.kind === "pending" ? (
-                    <StatusBadge variant="pending">Pending</StatusBadge>
-                  ) : row.isActive ? (
-                    <StatusBadge variant="done">Active</StatusBadge>
-                  ) : (
-                    <StatusBadge variant="danger">Inactive</StatusBadge>
-                  )}
-                </td>
-                <td className={styles.actions}>
-                  {row.kind === "pending" ? (
-                    <Button variant="ghost" onPress={() => setInvitationRow(row)}>
-                      Cancel invitation
-                    </Button>
-                  ) : (
-                    <>
-                      <TooltipTrigger>
-                        <Button
-                          variant="ghost"
-                          aria-label="Edit role"
-                          isDisabled={row.role === Role.DEV}
-                          onPress={() => setRoleRow(row)}
-                        >
-                          <FaPencil aria-hidden="true" className={styles.actionIcon} />
-                        </Button>
-                        <Tooltip>
-                          {row.role === Role.DEV ? "Developer role cannot be edited" : "Edit role"}
-                        </Tooltip>
-                      </TooltipTrigger>
-                      <TooltipTrigger>
-                        <Button
-                          variant="ghost"
-                          aria-label="Assign club"
-                          onPress={() => setClubRow(row)}
-                        >
-                          <FaPeopleGroup aria-hidden="true" className={styles.actionIcon} />
-                        </Button>
-                        <Tooltip>Assign club</Tooltip>
-                      </TooltipTrigger>
-                      <TooltipTrigger>
-                        <Button
-                          variant="ghost"
-                          aria-label={row.isActive ? "Deactivate user" : "Reactivate user"}
-                          onPress={() => setStatusRow(row)}
-                        >
-                          {row.isActive ? (
-                            <FaBan aria-hidden="true" className={styles.actionIcon} />
-                          ) : (
-                            <FaUserCheck aria-hidden="true" className={styles.actionIcon} />
-                          )}
-                        </Button>
-                        <Tooltip>{row.isActive ? "Deactivate" : "Reactivate"}</Tooltip>
-                      </TooltipTrigger>
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {rows.length === 0 && (
-              <tr>
-                <td colSpan={6} className={styles.empty}>
-                  No users match the current search or filters.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+        selectionMode="none"
+        renderAddButton
+        addButtonLabel="Add user"
+        onAddButtonPress={() => setAddOpen(true)}
+        refreshTrigger={refreshTrigger}
+        emptyContent="No users yet"
+      />
       <AddUserModal isOpen={addOpen} onOpenChange={setAddOpen} onSuccess={refresh} />
       {clubRow && clubRow.kind === "user" && (
         <AssignClubModal
@@ -223,11 +175,11 @@ export function UsersManagement({ initialRows }: UsersManagementProps) {
           onSuccess={refresh}
         />
       )}
-      {roleRow && roles.includes(roleRow.role as AssignableRole) && (
+      {roleRow && isAssignableRole(roleRow.role) && (
         <EditRoleModal
           userId={roleRow.id}
           userEmail={roleRow.email}
-          initialRole={roleRow.role as AssignableRole}
+          initialRole={roleRow.role}
           isOpen
           onOpenChange={(open) => {
             if (!open) setRoleRow(null);

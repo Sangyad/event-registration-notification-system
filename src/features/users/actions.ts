@@ -3,6 +3,7 @@
 import { getClubById } from "@/features/clubs/queries";
 import { Role } from "@/generated/prisma/browser";
 import { sendEmail } from "@/lib/messaging/email";
+import type { PageQuery } from "@/lib/primitives/types";
 import {
   actionConflict,
   actionInvalid,
@@ -23,8 +24,8 @@ import {
 import {
   countActivePrivilegedUsers,
   getUserById,
-  getUserManagementRows,
-  type UserManagementRow,
+  getUserManagementPage,
+  type UserManagementPage,
 } from "./queries";
 import {
   AddPendingUserSchema,
@@ -33,17 +34,16 @@ import {
   UserActiveSchema,
   UserIdSchema,
   UserManagementQuerySchema,
-  type UserManagementQueryInput,
 } from "./schemas";
 
-export async function getUserManagementRowsAction(
-  query: UserManagementQueryInput,
-): Promise<UserManagementRow[]> {
+export async function getUserManagementPageAction(query: PageQuery): Promise<UserManagementPage> {
   await requirePermission("user.read");
   const parsed = UserManagementQuerySchema.safeParse(query);
-  if (!parsed.success) return getUserManagementRows();
-  return getUserManagementRows({
+  if (!parsed.success) throw new Error("Invalid query parameters");
+  return getUserManagementPage({
     search: parsed.data.search,
+    cursor: parsed.data.cursor,
+    pageSize: parsed.data.pageSize,
     role: parsed.data.filters?.role,
     status: parsed.data.filters?.status,
   });

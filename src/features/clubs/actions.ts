@@ -1,5 +1,6 @@
 "use server";
 
+import type { PageQuery } from "@/lib/primitives/types";
 import {
   actionConflict,
   actionInvalid,
@@ -15,17 +16,16 @@ import {
   findClubsByShortName,
   getClubById,
   getClubOptions,
-  getClubRows,
+  getClubPage,
   getClubUsage,
   type ClubOption,
-  type ClubRow,
+  type ClubPage,
 } from "./queries";
 import {
   ClubIdSchema,
   ClubManagementQuerySchema,
   CreateClubSchema,
   UpdateClubSchema,
-  type ClubManagementQueryInput,
 } from "./schemas";
 
 async function findClubConflict(name: string, shortName: string | null, excludeClubId?: string) {
@@ -53,11 +53,15 @@ export async function getClubOptionsAction(): Promise<ClubOption[]> {
   return getClubOptions();
 }
 
-export async function getClubRowsAction(query: ClubManagementQueryInput): Promise<ClubRow[]> {
+export async function getClubPageAction(query: PageQuery): Promise<ClubPage> {
   await requirePermission("club.read");
   const parsed = ClubManagementQuerySchema.safeParse(query);
-  if (!parsed.success) return getClubRows();
-  return getClubRows({ search: parsed.data.search });
+  if (!parsed.success) throw new Error("Invalid query parameters");
+  return getClubPage({
+    search: parsed.data.search,
+    cursor: parsed.data.cursor,
+    pageSize: parsed.data.pageSize,
+  });
 }
 
 export async function createClubAction(payload: unknown): Promise<ActionStatusResponse> {

@@ -1,6 +1,12 @@
 import { NotificationAudience } from "@/generated/prisma/browser";
 import { Prisma } from "@/generated/prisma/client";
-import { decodeCursor, encodeCursor } from "@/lib/domain/pagination";
+import {
+  decodeTimestampCursor,
+  encodeTimestampCursor,
+  resolveCursorPageSize,
+  type CursorPage,
+  type TimestampCursor,
+} from "@/lib/domain/pagination";
 import { prisma } from "@/lib/infra/prisma";
 import type { PageQuery } from "@/lib/primitives/types";
 
@@ -17,18 +23,12 @@ export interface NotificationRow {
   isRead: boolean;
 }
 
-export interface NotificationPage {
-  rows: NotificationRow[];
-  nextCursor: string | null;
-}
+export type NotificationPage = CursorPage<NotificationRow>;
 
 export interface NotificationPageParams {
   scope: NotificationScope;
   query: PageQuery;
 }
-
-const DEFAULT_PAGE_SIZE = 20;
-const MAX_PAGE_SIZE = 50;
 
 function buildAudienceFilter(scope: NotificationScope): Prisma.NotificationWhereInput {
   if (scope.viewAll) return {};
@@ -61,18 +61,13 @@ function buildReadStatusFilter(
     : { reads: { some: { userId } } };
 }
 
-function buildCursorFilter(cursor: string | undefined, ascending: boolean) {
+function buildCursorFilter(cursor: TimestampCursor | null, ascending: boolean) {
   if (!cursor) return {};
-  const parts = decodeCursor(cursor);
-  const createdAtMs = parts ? Number(parts[0]) : Number.NaN;
-  const id = parts && typeof parts[1] === "string" ? parts[1] : null;
-  if (!Number.isFinite(createdAtMs) || !id) return {};
-
-  const createdAt = new Date(createdAtMs);
+  const { timestamp, id } = cursor;
   return {
     OR: ascending
-      ? [{ createdAt: { gt: createdAt } }, { createdAt, id: { gt: id } }]
-      : [{ createdAt: { lt: createdAt } }, { createdAt, id: { lt: id } }],
+      ? [{ createdAt: { gt: timestamp } }, { createdAt: timestamp, id: { gt: id } }]
+      : [{ createdAt: { lt: timestamp } }, { createdAt: timestamp, id: { lt: id } }],
   } satisfies Prisma.NotificationWhereInput;
 }
 
@@ -80,10 +75,11 @@ export async function getNotificationPage({
   scope,
   query,
 }: NotificationPageParams): Promise<NotificationPage> {
-  const pageSize = Math.min(Math.max(query.pageSize ?? DEFAULT_PAGE_SIZE, 1), MAX_PAGE_SIZE);
+  const pageSize = resolveCursorPageSize(query.pageSize);
   const search = query.search?.trim() ?? "";
   const ascending = query.sort?.direction === "asc";
   const direction = ascending ? "asc" : "desc";
+  const cursor = decodeTimestampCursor(query.cursor);
 
   const rows = await prisma.notification.findMany({
     where: {
@@ -91,7 +87,7 @@ export async function getNotificationPage({
         buildAudienceFilter(scope),
         buildReadStatusFilter(query.filters?.status, scope.userId),
         buildSearchFilter(search),
-        buildCursorFilter(query.cursor, ascending),
+        buildCursorFilter(cursor, ascending),
       ],
     },
     orderBy: [{ createdAt: direction }, { id: direction }],
@@ -117,7 +113,8 @@ export async function getNotificationPage({
       createdAt: row.createdAt,
       isRead: row.reads.length > 0,
     })),
-    nextCursor: hasMore && last ? encodeCursor([last.createdAt.getTime(), last.id]) : null,
+    nextCursor:
+      hasMore && last ? encodeTimestampCursor({ timestamp: last.createdAt, id: last.id }) : null,
   };
 }
 
