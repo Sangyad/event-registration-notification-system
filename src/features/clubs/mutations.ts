@@ -1,15 +1,20 @@
 import { prisma } from "@/lib/infra/prisma";
 
-export interface ClubWriteData {
+export interface ClubWritePayload {
   name: string;
   shortName: string | null;
 }
 
-export async function createClub(data: ClubWriteData): Promise<void> {
-  await prisma.club.create({ data });
+export interface ClubUpdatePayload extends ClubWritePayload {
+  clubId: string;
 }
 
-export async function updateClub(clubId: string, data: ClubWriteData): Promise<void> {
+export async function createClub(payload: ClubWritePayload): Promise<void> {
+  await prisma.club.create({ data: payload });
+}
+
+export async function updateClub(payload: ClubUpdatePayload): Promise<void> {
+  const { clubId, ...data } = payload;
   await prisma.club.update({ where: { id: clubId }, data });
 }
 

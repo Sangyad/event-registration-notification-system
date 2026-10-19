@@ -2,9 +2,9 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 
-import { getAuthAdapterClient } from "@/features/users/mutations";
 import { Role } from "@/generated/prisma/browser";
 import { getOptionalEnvVar, getRequiredEnvVar } from "@/lib/infra/env";
+import { getAuthAdapterClient } from "@/lib/infra/prisma";
 
 const schoolDomain = "@acdeducation.com";
 

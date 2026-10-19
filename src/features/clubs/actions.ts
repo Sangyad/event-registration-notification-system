@@ -21,12 +21,7 @@ import {
   type ClubOption,
   type ClubPage,
 } from "./queries";
-import {
-  ClubIdSchema,
-  ClubManagementQuerySchema,
-  CreateClubSchema,
-  UpdateClubSchema,
-} from "./schemas";
+import { ClubIdSchema, ClubPageQuerySchema, CreateClubSchema, UpdateClubSchema } from "./schemas";
 
 async function findClubConflict(name: string, shortName: string | null, excludeClubId?: string) {
   const nameMatch = (await findClubsByName(name, excludeClubId))[0];
@@ -55,7 +50,7 @@ export async function getClubOptionsAction(): Promise<ClubOption[]> {
 
 export async function getClubPageAction(query: PageQuery): Promise<ClubPage> {
   await requirePermission("club.read");
-  const parsed = ClubManagementQuerySchema.safeParse(query);
+  const parsed = ClubPageQuerySchema.safeParse(query);
   if (!parsed.success) throw new Error("Invalid query parameters");
   return getClubPage({
     search: parsed.data.search,
@@ -91,7 +86,8 @@ export async function updateClubAction(payload: unknown): Promise<ActionStatusRe
       parsed.data.clubId,
     );
     if (conflict) return conflict;
-    await updateClub(parsed.data.clubId, {
+    await updateClub({
+      clubId: parsed.data.clubId,
       name: parsed.data.name,
       shortName: parsed.data.shortName ?? null,
     });

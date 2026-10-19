@@ -26,7 +26,7 @@ export const SendNotificationSchema = z
     }
   });
 
-export const MarkReadSchema = z.object({
+export const MarkNotificationReadSchema = z.object({
   notificationId: z.string().regex(/^c[a-z0-9]{24}$/, "Invalid notification identifier"),
 });
 

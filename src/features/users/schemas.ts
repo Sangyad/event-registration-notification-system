@@ -10,9 +10,9 @@ const clubIdSchema = z.string().regex(/^c[a-z0-9]{24}$/, "Invalid club identifie
 
 export const UserIdSchema = z.object({ userId: cuidSchema });
 
-export const UserActiveSchema = UserIdSchema.extend({ isActive: z.boolean() });
+export const SetUserActiveSchema = UserIdSchema.extend({ isActive: z.boolean() });
 
-export const UpdateRoleSchema = z.object({
+export const UpdateUserRoleSchema = z.object({
   userId: cuidSchema,
   role: AssignableRoleSchema,
 });
@@ -34,7 +34,7 @@ export const UserRoleFilterSchema = z.enum([Role.STUDENT, Role.OFFICER, Role.ADM
 
 export const UserStatusFilterSchema = z.enum(["active", "inactive", "pending"]);
 
-export const UserManagementQuerySchema = z.object({
+export const UserManagementPageQuerySchema = z.object({
   search: optionalText(100, "Search", true),
   cursor: z.string().max(500).optional(),
   pageSize: z.number().int().min(1).max(50).optional(),

@@ -28,7 +28,7 @@ export interface ClubUsage {
   notificationCount: number;
 }
 
-export interface ClubManagementQuery {
+export interface ClubPageQuery {
   search?: string;
   cursor?: string;
   pageSize?: number;
@@ -73,7 +73,7 @@ export async function getClubOptions(): Promise<ClubOption[]> {
   });
 }
 
-export async function getClubPage(query: ClubManagementQuery = {}): Promise<ClubPage> {
+export async function getClubPage(query: ClubPageQuery = {}): Promise<ClubPage> {
   const { search = "", cursor: rawCursor, pageSize } = query;
   const resolvedPageSize = resolveCursorPageSize(pageSize);
   const cursor = decodeClubCursor(rawCursor);

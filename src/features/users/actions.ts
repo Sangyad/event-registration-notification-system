@@ -15,11 +15,11 @@ import { requirePermission } from "@/lib/security/auth-guards";
 import { toActionResponse } from "@/lib/security/errors";
 
 import {
-  deletePendingInvitation,
+  deletePendingRoleAssignment,
   setUserActive,
   setUserClub,
   updateUserRole,
-  upsertPendingAssignment,
+  upsertPendingRoleAssignment,
 } from "./mutations";
 import {
   countActivePrivilegedUsers,
@@ -29,16 +29,16 @@ import {
 } from "./queries";
 import {
   AddPendingUserSchema,
+  SetUserActiveSchema,
   SetUserClubSchema,
-  UpdateRoleSchema,
-  UserActiveSchema,
+  UpdateUserRoleSchema,
   UserIdSchema,
-  UserManagementQuerySchema,
+  UserManagementPageQuerySchema,
 } from "./schemas";
 
 export async function getUserManagementPageAction(query: PageQuery): Promise<UserManagementPage> {
   await requirePermission("user.read");
-  const parsed = UserManagementQuerySchema.safeParse(query);
+  const parsed = UserManagementPageQuerySchema.safeParse(query);
   if (!parsed.success) throw new Error("Invalid query parameters");
   return getUserManagementPage({
     search: parsed.data.search,
@@ -49,10 +49,10 @@ export async function getUserManagementPageAction(query: PageQuery): Promise<Use
   });
 }
 
-export async function updateRoleAction(payload: unknown): Promise<ActionStatusResponse> {
+export async function updateUserRoleAction(payload: unknown): Promise<ActionStatusResponse> {
   try {
     await requirePermission("user.update");
-    const parsed = UpdateRoleSchema.safeParse(payload);
+    const parsed = UpdateUserRoleSchema.safeParse(payload);
     if (!parsed.success) return actionInvalid("user role");
     const target = await getUserById(parsed.data.userId);
     if (!target) return actionNotFound("User");
@@ -77,12 +77,12 @@ export async function updateRoleAction(payload: unknown): Promise<ActionStatusRe
   }
 }
 
-export async function setActiveAction(
+export async function setUserActiveAction(
   payload: unknown,
 ): Promise<ActionDataResponse<{ selfDeactivated: boolean }>> {
   try {
     const session = await requirePermission("user.update");
-    const parsed = UserActiveSchema.safeParse(payload);
+    const parsed = SetUserActiveSchema.safeParse(payload);
     if (!parsed.success) return actionInvalid("user status");
     const target = await getUserById(parsed.data.userId);
     if (!target) return actionNotFound("User");
@@ -115,7 +115,12 @@ export async function addPendingUserAction(payload: unknown): Promise<ActionStat
       if (!club) return actionNotFound("Club");
     }
     const email = parsed.data.email.toLowerCase();
-    await upsertPendingAssignment(email, parsed.data.role, session.id, parsed.data.clubId);
+    await upsertPendingRoleAssignment({
+      email,
+      role: parsed.data.role,
+      assignedById: session.id,
+      clubId: parsed.data.clubId,
+    });
     await sendEmail({
       to: email,
       subject: "You have been added to ERNS",
@@ -152,7 +157,7 @@ export async function cancelPendingInvitationAction(
     await requirePermission("user.delete");
     const parsed = UserIdSchema.safeParse(payload);
     if (!parsed.success) return actionInvalid("pending assignment");
-    await deletePendingInvitation(parsed.data.userId);
+    await deletePendingRoleAssignment(parsed.data.userId);
     return { success: true };
   } catch (error) {
     return toActionResponse(error, "cancel pending assignment");

@@ -8,7 +8,7 @@ import { ListToolbar } from "@/components/ui/ListToolbar/ListToolbar";
 import { ProgressCircle } from "@/components/ui/ProgressCircle/ProgressCircle";
 import type { FilterDefinition } from "@/components/ui/TableFilter/TableFilter";
 import {
-  getNotificationsPageAction,
+  getNotificationPageAction,
   markNotificationReadAction,
 } from "@/features/notifications/actions";
 import { NotificationCard } from "@/features/notifications/components/NotificationCard/NotificationCard";
@@ -60,7 +60,7 @@ export function NotificationsFeed({
 
   const { items, setItems, hasMore, isInitialLoad, isLoadingMore, loadMore, refresh } =
     useCursorPagination({
-      fetchPage: getNotificationsPageAction,
+      fetchPage: getNotificationPageAction,
       query: { search: debouncedSearch, filters },
       initialRows: initialNotifications,
       initialCursor,

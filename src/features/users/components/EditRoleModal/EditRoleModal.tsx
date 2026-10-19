@@ -7,8 +7,8 @@ import type { z } from "zod";
 import { Button } from "@/components/ui/Button/Button";
 import { Modal } from "@/components/ui/Modal/Modal";
 import { Select, SelectItem } from "@/components/ui/Select/Select";
-import { updateRoleAction } from "@/features/users/actions";
-import { UpdateRoleSchema } from "@/features/users/schemas";
+import { updateUserRoleAction } from "@/features/users/actions";
+import { UpdateUserRoleSchema } from "@/features/users/schemas";
 import { Role } from "@/generated/prisma/browser";
 import { useModalForm } from "@/lib/hooks/useModalForm";
 import { createFieldValidator } from "@/lib/validation/form-utils";
@@ -37,14 +37,16 @@ export function EditRoleModal({
 }: EditRoleModalProps) {
   const [role, setRole] = useState<AssignableRole>(initialRole);
 
-  const { isPending, submitForm, handleCancel } = useModalForm<z.input<typeof UpdateRoleSchema>>({
-    submit: updateRoleAction,
+  const { isPending, submitForm, handleCancel } = useModalForm<
+    z.input<typeof UpdateUserRoleSchema>
+  >({
+    submit: updateUserRoleAction,
     onOpenChange,
     onSuccess,
     successMessage: "Role updated",
     successDescription: "The user's role has been updated.",
     failureMessage: "Failed to update role",
-    schema: UpdateRoleSchema,
+    schema: UpdateUserRoleSchema,
   });
 
   async function handleSubmit(event: React.SyntheticEvent) {
@@ -69,7 +71,7 @@ export function EditRoleModal({
               const selectedRole = String(value) as AssignableRole;
               if (roles.includes(selectedRole)) setRole(selectedRole);
             }}
-            validate={createFieldValidator(UpdateRoleSchema.shape.role)}
+            validate={createFieldValidator(UpdateUserRoleSchema.shape.role)}
             isDisabled={isPending}
           >
             {roles.map((item) => (

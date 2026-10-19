@@ -26,7 +26,7 @@ export type UserManagementPage = CursorPage<UserManagementRow>;
 
 export type UserStatusFilter = "active" | "inactive" | "pending";
 
-export interface UserManagementQuery {
+export interface UserManagementPageQuery {
   search?: string;
   cursor?: string;
   pageSize?: number;
@@ -79,7 +79,7 @@ function buildPendingSearchFilter(search: string): Prisma.PendingRoleAssignmentW
 }
 
 export async function getUserManagementPage(
-  query: UserManagementQuery = {},
+  query: UserManagementPageQuery = {},
 ): Promise<UserManagementPage> {
   const { search = "", cursor: rawCursor, pageSize, role = [], status = [] } = query;
   const resolvedPageSize = resolveCursorPageSize(pageSize);

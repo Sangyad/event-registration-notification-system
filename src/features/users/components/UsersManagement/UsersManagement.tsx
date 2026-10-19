@@ -15,7 +15,7 @@ import { ClubLabel } from "@/features/clubs/components/ClubLabel/ClubLabel";
 import {
   cancelPendingInvitationAction,
   getUserManagementPageAction,
-  setActiveAction,
+  setUserActiveAction,
 } from "@/features/users/actions";
 import { AddUserModal } from "@/features/users/components/AddUserModal/AddUserModal";
 import { AssignClubModal } from "@/features/users/components/AssignClubModal/AssignClubModal";
@@ -197,7 +197,7 @@ export function UsersManagement({ initialRows, initialCursor }: UsersManagementP
         onConfirm={async () => {
           if (!statusRow) return;
           const isActive = !statusRow.isActive;
-          const result = await setActiveAction({ userId: statusRow.id, isActive });
+          const result = await setUserActiveAction({ userId: statusRow.id, isActive });
           if (!result.success) {
             toastActionError(result, isActive ? "reactivate user" : "deactivate user");
             return;

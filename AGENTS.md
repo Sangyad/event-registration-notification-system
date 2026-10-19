@@ -110,6 +110,32 @@ environment: Nix flake (pinned toolchain; non-Nix contributors install Node/pnpm
   - `queries.ts` - Prisma reads. Plain async functions.
   - `mutations.ts` - Prisma writes. Plain async functions.
 
+### Naming conventions
+
+Functions are named after the domain data they operate on, with the layer encoded by suffix rather than by prefix.
+
+- **Queries** (`queries.ts`) - no `Action` suffix. Reads use `get<Entity>...`; paginated lists return `CursorPage` and are
+  named `get<Entity>Page(query)`; single records `get<Entity>ById(id)`; lookup lists `get<Entity>Options()`. Aggregates
+  use `count<Entity>...`; non-unique duplicate/lookup scans use `find<Entity>By<Field>(...)`.
+- **Mutations** (`mutations.ts`) - no `Action` suffix. Use the operation verb plus entity: `create<Entity>`,
+  `update<Entity>`, `delete<Entity>`, `set<Entity><Field>`, `mark<Entity><State>`, `upsert<Entity>`, `ensure<Entity>`.
+  Always use the same noun for the same Prisma model across all four operations.
+- **Server Actions** (`actions.ts`) - every exported action ends in `Action`. A 1:1 wrapper mirrors the underlying
+  query/mutation name (`updateUserRole` -> `updateUserRoleAction`, `getNotificationPage` -> `getNotificationPageAction`).
+  Actions that orchestrate additional work keep the user-facing intent verb while still wrapping the write
+  (`sendNotificationAction` creates and emails; `addPendingUserAction` upserts a pending role assignment).
+- **Payloads** - complex writes take a single named payload rather than positional arguments, named
+  `<Entity><Operation>Payload` (e.g. `ClubWritePayload`, `ClubUpdatePayload`, `NotificationCreatePayload`,
+  `PendingRoleAssignmentPayload`). Two-argument `(id, value)` toggles and one-argument deletes stay positional.
+
+Type and schema names follow the function they belong to:
+
+- Row/list types: `<Entity>Row`, `<Entity>Page` (`CursorPage<<Entity>Row>`), `<Entity>Option`, `<Entity>Usage`.
+- Query parameter types mirror their query function: `<Entity>PageQuery` (e.g. `getClubPage` -> `ClubPageQuery`).
+- Write schemas are `<Operation><Entity>Schema` (e.g. `UpdateUserRoleSchema`, `MarkNotificationReadSchema`); list query
+  schemas are `<Entity>PageQuerySchema` (e.g. `ClubPageQuerySchema`, `UserManagementPageQuerySchema`).
+- Infrastructure getters (e.g. `getAuthAdapterClient`) live in `src/lib/infra/`, never in `mutations.ts`.
+
 ### Execution protocol
 
 - Components must never invoke `queries.ts` or `mutations.ts` directly if the action requires data filtering or mutation
@@ -304,8 +330,8 @@ fields, or reshaping the data.
   `global-error.tsx`, `not-found.tsx`, `loading.tsx`, `route.tsx` etc.) which require a default export. Use inline `export
 default function` for these files.
 - PascalCase components/types; camelCase variables/functions/files (component dirs are PascalCase).
-- No inline `//` comments unless explaining a non-obvious decision. TSDoc on `src/lib/` helpers is the explicit
-  exception.
+- No inline `//` comments unless explaining a non-obvious decision. TSDoc on `src/lib/` helpers and exported Server
+  Actions is the explicit exception.
 - Prisma schema: `camelCase` fields, `PascalCase` models/enums.
 - Keep credentials and server-only environment variables out of client bundles. Never hardcode or commit real secrets;
   validate required environment variables at an appropriate boundary (`secrets/` holds local secret material and is
@@ -316,5 +342,8 @@ default function` for these files.
 ## Documentation (TSDoc)
 
 - TSDoc (`/** … */`) is required for **all functions and exported types/interfaces in `src/lib/`**; use `@param`,
-  `@returns`, and `@typeParam` where applicable. Do not add TSDoc elsewhere.
+  `@returns`, and `@typeParam` where applicable.
+- TSDoc is also required on **every exported Server Action** (`actions.ts`) - these are the contract consumed by client
+  components, so document the user-facing operation, each `@param`, and the returned `ActionStatusResponse` /
+  `ActionDataResponse` / read shape. Use `@throws` for guards that throw instead of returning an envelope.
 - Keep descriptions concise and within the 100-character print width; Prettier will reformat them as needed.

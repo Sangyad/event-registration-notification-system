@@ -13,10 +13,14 @@ import {
   getUnreadNotificationCount,
   type NotificationPage,
 } from "./queries";
-import { MarkReadSchema, NotificationPageQuerySchema, SendNotificationSchema } from "./schemas";
+import {
+  MarkNotificationReadSchema,
+  NotificationPageQuerySchema,
+  SendNotificationSchema,
+} from "./schemas";
 import { buildNotificationScope } from "./scope";
 
-export async function getNotificationsPageAction(query: PageQuery): Promise<NotificationPage> {
+export async function getNotificationPageAction(query: PageQuery): Promise<NotificationPage> {
   const session = await requirePermission("notification.read");
   const parsed = NotificationPageQuerySchema.safeParse(query);
   return getNotificationPage({
@@ -33,7 +37,7 @@ export async function getUnreadNotificationCountAction(): Promise<number> {
 export async function markNotificationReadAction(payload: unknown): Promise<ActionStatusResponse> {
   try {
     const session = await requireAuth();
-    const parsed = MarkReadSchema.safeParse(payload);
+    const parsed = MarkNotificationReadSchema.safeParse(payload);
     if (!parsed.success) return actionInvalid("notification");
     await markNotificationRead(parsed.data.notificationId, session.id);
     return { success: true };
@@ -47,7 +51,7 @@ export async function sendNotificationAction(payload: unknown): Promise<ActionSt
     const session = await requirePermission("notification.create");
     const parsed = SendNotificationSchema.safeParse(payload);
     if (!parsed.success) return actionInvalid("notification");
-    const notification = await createNotification({ ...parsed.data, createdById: session.id });
+    await createNotification({ ...parsed.data, createdById: session.id });
     const recipients = await getNotificationRecipients(parsed.data.audience, parsed.data.clubId);
     if (recipients.length > 0) {
       await sendEmail({
@@ -56,7 +60,6 @@ export async function sendNotificationAction(payload: unknown): Promise<ActionSt
         html: `<h1>${parsed.data.title}</h1><p>${parsed.data.body}</p>`,
       });
     }
-    void notification;
     return { success: true };
   } catch (error) {
     return toActionResponse(error, "send notification");
