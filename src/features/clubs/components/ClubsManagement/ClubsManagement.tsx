@@ -33,7 +33,7 @@ export function ClubsManagement({ initialRows, initialCursor }: ClubsManagementP
       id: "name",
       name: "Club",
       isRowHeader: true,
-      render: (_value, row) => <ClubLabel name={row.name} shortName={row.shortName} />,
+      render: (_value, row) => row.name,
     },
     { id: "memberCount", name: "Members" },
     { id: "eventCount", name: "Events" },
