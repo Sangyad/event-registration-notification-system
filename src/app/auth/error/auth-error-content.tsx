@@ -15,7 +15,7 @@ const errorMap: Record<string, { title: string; message: string }> = {
   AccessDenied: {
     title: "Access denied",
     message:
-      "You don't have permission to sign in with this account. Use your @acdeducation.com account or contact your administrator.",
+      "You don't have permission to sign in with this account. Your account may have been deactivated. If this is a mistake, please contact your administrator.",
   },
   Domain: {
     title: "School account required",

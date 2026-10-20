@@ -11,8 +11,8 @@ export interface NoticePageProps {
 
 /**
  * Full-page notice for terminal or informational app states (e.g. account
- * deactivated, access changed). Actions such as navigation links are passed as
- * children.
+ * deactivated, access denied, access changed). Actions such as navigation links
+ * are passed as children.
  */
 export function NoticePage({ title, message, children, className }: NoticePageProps) {
   return (

@@ -74,7 +74,7 @@ export async function requirePagePermission(
   } catch (error) {
     if (error instanceof UnauthorizedError) redirect("/sign-in");
     if (error instanceof DeactivatedError) redirect("/deactivated?reason=deactivated");
-    if (error instanceof ForbiddenError) redirect("/access-changed");
+    if (error instanceof ForbiddenError) redirect("/access-denied");
     throw error;
   }
 }

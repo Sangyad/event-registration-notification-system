@@ -186,7 +186,7 @@ export function UsersManagement({ initialRows, initialCursor }: UsersManagementP
           }}
           onSuccess={(selfDemoted) => {
             if (selfDemoted) {
-              router.replace("/access-changed?reason=role");
+              router.replace("/access-changed");
               return;
             }
             refresh();
