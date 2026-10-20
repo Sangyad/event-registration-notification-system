@@ -23,7 +23,7 @@ interface EditRoleModalProps {
   initialRole: AssignableRole;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onSuccess?: () => void;
+  onSuccess?: (selfDemoted: boolean) => void;
 }
 
 export function EditRoleModal({
@@ -36,10 +36,13 @@ export function EditRoleModal({
 }: EditRoleModalProps) {
   const [role, setRole] = useState<AssignableRole>(initialRole);
 
-  const { isPending, submitForm, handleCancel } = useModalForm<UpdateUserRolePayload>({
+  const { isPending, submitForm, handleCancel } = useModalForm<
+    UpdateUserRolePayload,
+    { selfDemoted: boolean }
+  >({
     submit: updateUserRoleAction,
     onOpenChange,
-    onSuccess,
+    onSuccess: (data) => onSuccess?.(data?.selfDemoted ?? false),
     successMessage: "Role updated",
     successDescription: "The user's role has been updated.",
     failureMessage: "Failed to update role",

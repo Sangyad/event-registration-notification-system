@@ -65,14 +65,14 @@ export async function getUserManagementPageAction(query: PageQuery): Promise<Use
  * Updates a user's role while protecting developer and last-admin accounts.
  *
  * @param payload - The target `userId` and the new `role`.
- * @returns `success: true`, or an invalid/not-found/conflict envelope.
+ * @returns `success: true` plus `selfDemoted`, or an invalid/not-found/conflict envelope.
  * @throws {ForbiddenError} When the caller lacks `user.update`.
  */
 export async function updateUserRoleAction(
   payload: UpdateUserRolePayload,
-): Promise<ActionStatusResponse> {
+): Promise<ActionDataResponse<{ selfDemoted: boolean }>> {
   try {
-    await requirePermission("user.update");
+    const actor = await requirePermission("user.update");
     const parsed = UpdateUserRoleSchema.safeParse(payload);
     if (!parsed.success) return actionInvalid("user role");
     const target = await getUserById(parsed.data.userId);
@@ -92,7 +92,12 @@ export async function updateUserRoleAction(
       }
     }
     await updateUserRole(parsed.data.userId, parsed.data.role);
-    return { success: true };
+    return {
+      success: true,
+      data: {
+        selfDemoted: actor.id === parsed.data.userId && parsed.data.role !== Role.ADMIN,
+      },
+    };
   } catch (error) {
     return toActionResponse(error, "update user role");
   }

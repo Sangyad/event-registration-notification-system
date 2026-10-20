@@ -184,7 +184,13 @@ export function UsersManagement({ initialRows, initialCursor }: UsersManagementP
           onOpenChange={(open) => {
             if (!open) setRoleRow(null);
           }}
-          onSuccess={refresh}
+          onSuccess={(selfDemoted) => {
+            if (selfDemoted) {
+              router.replace("/access-changed?reason=role");
+              return;
+            }
+            refresh();
+          }}
         />
       )}
       <ConfirmDialog

@@ -1,7 +1,9 @@
-import { getClubPageAction } from "@/features/clubs/actions";
 import { ClubsManagement } from "@/features/clubs/components/ClubsManagement/ClubsManagement";
+import { getClubPage } from "@/features/clubs/queries";
+import { requirePagePermission } from "@/lib/security/auth-guards";
 
 export default async function ClubsPage() {
-  const page = await getClubPageAction({ pageSize: 10 });
+  await requirePagePermission("club.read");
+  const page = await getClubPage({ pageSize: 10 });
   return <ClubsManagement initialRows={page.rows} initialCursor={page.nextCursor} />;
 }

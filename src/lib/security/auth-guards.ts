@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 import { Role } from "@/generated/prisma/browser";
 import { auth } from "@/lib/infra/auth";
 import { DeactivatedError, ForbiddenError, UnauthorizedError } from "@/lib/security/errors";
@@ -50,4 +52,29 @@ export async function requirePermission(...permissions: Permission[]): Promise<A
   const user = await requireAuth();
   if (!permissions.some((permission) => can(user.role, permission))) throw new ForbiddenError();
   return user;
+}
+
+/**
+ * Enforces the session and permissions for a route-level Server Component.
+ *
+ * Unlike {@link requirePermission}, failures redirect to a user-facing notice
+ * instead of throwing, so stale client navigation after a role change never
+ * reaches the error boundary. Server Actions must keep using
+ * {@link requirePermission} and return envelopes.
+ *
+ * @param permissions - One or more granular permissions; the caller must be
+ *                      granted at least one.
+ * @returns The authenticated user when authorized.
+ */
+export async function requirePagePermission(
+  ...permissions: Permission[]
+): Promise<AuthenticatedUser> {
+  try {
+    return await requirePermission(...permissions);
+  } catch (error) {
+    if (error instanceof UnauthorizedError) redirect("/sign-in");
+    if (error instanceof DeactivatedError) redirect("/deactivated?reason=deactivated");
+    if (error instanceof ForbiddenError) redirect("/access-changed");
+    throw error;
+  }
 }
