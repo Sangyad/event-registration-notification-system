@@ -19,8 +19,8 @@ const errorMap: Record<string, { title: string; message: string }> = {
       "You don't have permission to sign in with this account. Your account may have been deactivated. If this is a mistake, please contact your administrator.",
   },
   Domain: {
-    title: "Invitation required",
-    message: `Use your ${SCHOOL_EMAIL_DOMAIN} account or ask an administrator to invite this email.`,
+    title: "Email domain not allowed",
+    message: `Use your ${SCHOOL_EMAIL_DOMAIN} account, or ask an administrator to invite this email.`,
   },
   Deactivated: {
     title: "Account deactivated",

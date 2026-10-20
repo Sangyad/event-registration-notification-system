@@ -85,7 +85,7 @@ Access failures land on a page that explains what happened and what to do next:
 | Situation                               | What the person sees                                      |
 | --------------------------------------- | --------------------------------------------------------- |
 | No session on a protected page          | A prompt to sign in.                                      |
-| External address without an invitation  | An explanation that a school account or invite is needed. |
+| Email domain not allowed                | An explanation that a school account or invite is needed. |
 | Account deactivated                     | A message to contact an administrator.                    |
 | Signed in but missing a page permission | An access-denied page.                                    |
 | Admin removes their own admin access    | A confirmation that the change succeeded.                 |

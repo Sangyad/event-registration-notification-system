@@ -37,7 +37,7 @@ There is no open registration form. A first-time user needs a school address, th
 pending invitation. An invitation carries the role and optional club the person should receive. Those values are applied
 when the account is created on first sign-in, and the invitation is then consumed.
 
-Access failures land on clear notice pages rather than generic errors: sign-in required, invitation required, account
+Access failures land on clear notice pages rather than generic errors: sign-in required, email domain not allowed, account
 deactivated, access denied, or access changed after a role update. [AUTH-AND-ACCESS.md](./AUTH-AND-ACCESS.md) covers the
 full flow.
 
