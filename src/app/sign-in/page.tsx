@@ -2,7 +2,6 @@ import Image from "next/image";
 import { Suspense } from "react";
 
 import { SignInForm } from "@/features/auth/components/SignInForm/SignInForm";
-import { SCHOOL_EMAIL_DOMAIN } from "@/lib/security/email-domain";
 
 import styles from "./page.module.css";
 
@@ -26,9 +25,7 @@ export default function SignInPage() {
         <Suspense fallback={null}>
           <SignInForm />
         </Suspense>
-        <p className={styles.note}>
-          School ({SCHOOL_EMAIL_DOMAIN}) and invited external accounts are accepted.
-        </p>
+        <p className={styles.note}>Only @acdeducation.com accounts are accepted.</p>
       </section>
     </main>
   );
