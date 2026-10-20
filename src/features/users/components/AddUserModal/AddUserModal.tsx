@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Form } from "react-aria-components";
 
 import { Button } from "@/components/ui/Button/Button";
+import { Checkbox } from "@/components/ui/Checkbox/Checkbox";
 import { Modal } from "@/components/ui/Modal/Modal";
 import { Select, SelectItem } from "@/components/ui/Select/Select";
 import { TextField } from "@/components/ui/TextField/TextField";
@@ -15,6 +16,11 @@ import { AddPendingUserSchema, type AddPendingUserPayload } from "@/features/use
 import { Role } from "@/generated/prisma/browser";
 import { toastError } from "@/lib/hooks/toast-utils";
 import { useModalForm } from "@/lib/hooks/useModalForm";
+import {
+  isAllowedEmail,
+  SCHOOL_EMAIL_DOMAIN,
+  SCHOOL_EMAIL_REQUIRED_MESSAGE,
+} from "@/lib/security/email-domain";
 import { createFieldValidator, requiredString } from "@/lib/validation/form-utils";
 
 import styles from "./AddUserModal.module.css";
@@ -23,6 +29,7 @@ const roles = [Role.STUDENT, Role.OFFICER, Role.ADMIN];
 type AssignableRole = (typeof roles)[number];
 
 const NO_CLUB = "none";
+const validateEmailFormat = createFieldValidator(AddPendingUserSchema.shape.email);
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -34,12 +41,14 @@ export function AddUserModal({ isOpen, onOpenChange, onSuccess }: AddUserModalPr
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<AssignableRole>(Role.STUDENT);
   const [clubId, setClubId] = useState<string | null>(null);
+  const [allowExternalEmail, setAllowExternalEmail] = useState(false);
   const [clubs, setClubs] = useState<ClubOption[]>([]);
 
   const reset = () => {
     setEmail("");
     setRole(Role.STUDENT);
     setClubId(null);
+    setAllowExternalEmail(false);
   };
 
   const { isPending, submitForm, handleCancel } = useModalForm<AddPendingUserPayload>({
@@ -48,7 +57,7 @@ export function AddUserModal({ isOpen, onOpenChange, onSuccess }: AddUserModalPr
     onSuccess,
     reset,
     successMessage: "User added",
-    successDescription: "The invitation has been sent to the school email address.",
+    successDescription: "The invitation has been sent to the provided email address.",
     failureMessage: "Failed to add user",
     schema: AddPendingUserSchema,
   });
@@ -80,10 +89,19 @@ export function AddUserModal({ isOpen, onOpenChange, onSuccess }: AddUserModalPr
     };
   }, [isOpen, onOpenChange]);
 
+  function validateEmail(value: unknown): string | null {
+    const formatError = validateEmailFormat(value);
+    if (formatError) return formatError;
+    if (typeof value === "string" && !isAllowedEmail(value, allowExternalEmail)) {
+      return SCHOOL_EMAIL_REQUIRED_MESSAGE;
+    }
+    return null;
+  }
+
   async function handleSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
     if (isPending) return;
-    await submitForm({ email: requiredString(email), role, clubId });
+    await submitForm({ email: requiredString(email), role, clubId, allowExternalEmail });
   }
 
   return (
@@ -91,13 +109,25 @@ export function AddUserModal({ isOpen, onOpenChange, onSuccess }: AddUserModalPr
       <Form validationBehavior="native" onSubmit={handleSubmit}>
         <div className={styles.form}>
           <TextField
-            label="School email"
+            label="Email"
             type="email"
             value={email}
             onChange={setEmail}
-            validate={createFieldValidator(AddPendingUserSchema.shape.email)}
+            validate={validateEmail}
             isDisabled={isPending}
           />
+          <Checkbox
+            isSelected={allowExternalEmail}
+            onChange={setAllowExternalEmail}
+            isDisabled={isPending}
+            description={
+              role === Role.ADMIN
+                ? `Permit an address outside ${SCHOOL_EMAIL_DOMAIN}. External admins get full access, so only use this for verified collaborators.`
+                : `Permit an address outside ${SCHOOL_EMAIL_DOMAIN}. Only use this for verified external collaborators.`
+            }
+          >
+            Allow external email
+          </Checkbox>
           <Select
             label="Role"
             value={role}

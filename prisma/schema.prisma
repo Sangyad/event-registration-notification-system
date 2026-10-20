@@ -23,6 +23,7 @@ model User {
   id                     String                  @id @default(cuid())
   email                  String                  @unique
   emailVerified          DateTime?
+  allowExternalEmail     Boolean                 @default(false)
   name                   String
   image                  String?
   role                   Role                    @default(STUDENT)
@@ -40,14 +41,15 @@ model User {
 }
 
 model PendingRoleAssignment {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  role         Role
-  clubId       String?
-  club         Club?    @relation(fields: [clubId], references: [id])
-  assignedById String
-  assignedBy   User     @relation("AssignedBy", fields: [assignedById], references: [id])
-  assignedAt   DateTime @default(now())
+  id                 String   @id @default(cuid())
+  email              String   @unique
+  role               Role
+  allowExternalEmail Boolean  @default(false)
+  clubId             String?
+  club               Club?    @relation(fields: [clubId], references: [id])
+  assignedById       String
+  assignedBy         User     @relation("AssignedBy", fields: [assignedById], references: [id])
+  assignedAt         DateTime @default(now())
 }
 
 model Club {

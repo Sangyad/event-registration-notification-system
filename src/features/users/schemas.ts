@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { Role } from "@/generated/prisma/browser";
+import { isAllowedEmail, SCHOOL_EMAIL_REQUIRED_MESSAGE } from "@/lib/security/email-domain";
 import { emailText, optionalText } from "@/lib/validation/form-utils";
 
 export const AssignableRoleSchema = z.enum([Role.STUDENT, Role.OFFICER, Role.ADMIN]);
@@ -19,13 +20,22 @@ export const UpdateUserRoleSchema = z.object({
   role: AssignableRoleSchema,
 });
 
-export const AddPendingUserSchema = z.object({
-  email: emailText("Email").refine((value) => value.toLowerCase().endsWith("@acdeducation.com"), {
-    message: "Email must end in @acdeducation.com",
-  }),
-  role: AssignableRoleSchema,
-  clubId: clubIdSchema.nullable().default(null),
-});
+export const AddPendingUserSchema = z
+  .object({
+    email: emailText("Email"),
+    role: AssignableRoleSchema,
+    clubId: clubIdSchema.nullable().default(null),
+    allowExternalEmail: z.boolean().default(false),
+  })
+  .superRefine(({ email, allowExternalEmail }, context) => {
+    if (!isAllowedEmail(email, allowExternalEmail)) {
+      context.addIssue({
+        code: "custom",
+        path: ["email"],
+        message: SCHOOL_EMAIL_REQUIRED_MESSAGE,
+      });
+    }
+  });
 
 export const SetUserClubSchema = z.object({
   userId: cuidSchema,

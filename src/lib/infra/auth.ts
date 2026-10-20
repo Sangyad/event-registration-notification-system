@@ -5,17 +5,17 @@ import Google from "next-auth/providers/google";
 import { Role } from "@/generated/prisma/browser";
 import { getOptionalEnvVar, getRequiredEnvVar } from "@/lib/infra/env";
 import { getAuthAdapterClient } from "@/lib/infra/prisma";
-
-const schoolDomain = "@acdeducation.com";
+import { isAllowedEmail, isSchoolEmail } from "@/lib/security/email-domain";
 
 /**
  * NextAuth configuration (Google OAuth + Prisma adapter + JWT sessions).
  *
- * The `signIn` callback gates access by school-domain email, bootstrap
- * `DEV_EMAIL`, pending role assignments, and active-user status; the `session`
- * callbacks refresh the database `id`, `role`, `isActive`, and `clubId` onto
- * the JWT and session so deactivated users can be redirected to the notice
- * page without being silently sent to sign-in.
+ * The `signIn` callback gates access by school-domain email (or an approved
+ * external address), bootstrap `DEV_EMAIL`, pending role assignments, and
+ * active-user status; the `session` callbacks refresh the database `id`,
+ * `role`, `isActive`, and `clubId` onto the JWT and session so deactivated
+ * users can be redirected to the notice page without being silently sent to
+ * sign-in.
  *
  * Exports the route `handlers`, `signIn`/`signOut` helpers, and the `auth()`
  * session getter.
@@ -59,8 +59,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         existingUser?.role === Role.OFFICER ||
         existingUser?.role === Role.ADMIN ||
         existingUser?.role === Role.DEV;
+      const allowExternalEmail =
+        existingUser?.allowExternalEmail ?? pending?.allowExternalEmail ?? false;
 
-      if (email !== devEmail && !hasPrivilegedRole && !email.endsWith(schoolDomain)) {
+      if (email !== devEmail && !hasPrivilegedRole && !isAllowedEmail(email, allowExternalEmail)) {
         return "/auth/error?error=Domain";
       }
 
@@ -73,6 +75,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               name: user.name ?? email,
               image: user.image,
               role,
+              allowExternalEmail: allowExternalEmail && !isSchoolEmail(email),
               clubId: pending?.clubId ?? null,
             },
           });

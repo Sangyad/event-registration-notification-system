@@ -66,8 +66,9 @@ Follow these steps to run the project locally from a fresh clone.
    pnpm dev
    ```
 
-   Open <http://localhost:3000>. Sign in with an `@acdeducation.com` Google account, or with the email configured as
-   `DEV_EMAIL`. Emails sent by the app appear in Mailpit at <http://localhost:8025>.
+   Open <http://localhost:3000>. Sign in with an `@acdeducation.com` Google account, with the email configured as
+   `DEV_EMAIL`, or with an external address an administrator invited by enabling **Allow external email** in **Manage
+   Users**. Emails sent by the app appear in Mailpit at <http://localhost:8025>.
 
 The same startup flow is wrapped by `just`:
 

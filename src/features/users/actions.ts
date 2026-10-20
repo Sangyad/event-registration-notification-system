@@ -12,6 +12,7 @@ import {
   type ActionStatusResponse,
 } from "@/lib/security/action-response";
 import { requirePermission } from "@/lib/security/auth-guards";
+import { isSchoolEmail } from "@/lib/security/email-domain";
 import { toActionResponse } from "@/lib/security/errors";
 
 import {
@@ -141,7 +142,7 @@ export async function setUserActiveAction(
 /**
  * Creates or refreshes a pending role assignment and emails the invitation.
  *
- * @param payload - The school email, role, and optional club id.
+ * @param payload - The email, role, optional club id, and external-email approval.
  * @returns `success: true`, or an invalid/not-found envelope.
  * @throws {ForbiddenError} When the caller lacks `user.create`.
  */
@@ -157,16 +158,21 @@ export async function addPendingUserAction(
       if (!club) return actionNotFound("Club");
     }
     const email = parsed.data.email.toLowerCase();
+    const allowExternalEmail = parsed.data.allowExternalEmail && !isSchoolEmail(email);
     await upsertPendingRoleAssignment({
       email,
       role: parsed.data.role,
+      allowExternalEmail,
       assignedById: session.id,
       clubId: parsed.data.clubId,
     });
+    const signInHint = allowExternalEmail
+      ? "Sign in with the Google account associated with this email address to get started."
+      : "Sign in with your school account to get started.";
     await sendEmail({
       to: email,
       subject: "You have been added to ERNS",
-      html: `<p>You have been added as <strong>${parsed.data.role}</strong>.</p><p>Sign in with your school account to get started.</p>`,
+      html: `<p>You have been added as <strong>${parsed.data.role}</strong>.</p><p>${signInHint}</p>`,
     });
     return { success: true };
   } catch (error) {

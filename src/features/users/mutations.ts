@@ -4,6 +4,7 @@ import { prisma } from "@/lib/infra/prisma";
 export interface PendingRoleAssignmentPayload {
   email: string;
   role: Role;
+  allowExternalEmail: boolean;
   assignedById: string;
   clubId: string | null;
 }
@@ -37,11 +38,11 @@ export async function setUserClub(userId: string, clubId: string | null): Promis
 export async function upsertPendingRoleAssignment(
   payload: PendingRoleAssignmentPayload,
 ): Promise<void> {
-  const { email, role, assignedById, clubId } = payload;
+  const { email, role, allowExternalEmail, assignedById, clubId } = payload;
   await prisma.pendingRoleAssignment.upsert({
     where: { email },
-    update: { role, assignedById, clubId, assignedAt: new Date() },
-    create: { email, role, assignedById, clubId },
+    update: { role, allowExternalEmail, assignedById, clubId, assignedAt: new Date() },
+    create: { email, role, allowExternalEmail, assignedById, clubId },
   });
 }
 
