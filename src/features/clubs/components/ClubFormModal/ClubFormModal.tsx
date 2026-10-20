@@ -8,11 +8,7 @@ import { Modal } from "@/components/ui/Modal/Modal";
 import { TextField } from "@/components/ui/TextField/TextField";
 import { createClubAction, updateClubAction } from "@/features/clubs/actions";
 import type { ClubOption } from "@/features/clubs/queries";
-import {
-  CreateClubSchema,
-  UpdateClubSchema,
-  type CreateClubPayload,
-} from "@/features/clubs/schemas";
+import { CreateClubSchema, type CreateClubPayload } from "@/features/clubs/schemas";
 import { useModalForm } from "@/lib/hooks/useModalForm";
 import { createFieldValidator, optionalString, requiredString } from "@/lib/validation/form-utils";
 
@@ -35,13 +31,7 @@ export function ClubFormModal({ isOpen, onOpenChange, onSuccess, club }: ClubFor
   };
 
   const submit = (payload: CreateClubPayload) =>
-    club
-      ? updateClubAction({
-          clubId: club.id,
-          name: payload.name,
-          shortName: payload.shortName,
-        })
-      : createClubAction(payload);
+    club ? updateClubAction({ clubId: club.id, ...payload }) : createClubAction(payload);
 
   const { isPending, submitForm, handleCancel } = useModalForm<CreateClubPayload>({
     submit,
@@ -53,7 +43,7 @@ export function ClubFormModal({ isOpen, onOpenChange, onSuccess, club }: ClubFor
       ? "The club details have been updated."
       : "The club is now available across the system.",
     failureMessage: club ? "Failed to update club" : "Failed to add club",
-    schema: club ? UpdateClubSchema : CreateClubSchema,
+    schema: CreateClubSchema,
   });
 
   async function handleSubmit(event: React.SyntheticEvent) {
