@@ -29,9 +29,9 @@ Permissions are not a simple role hierarchy. Every capability is looked up in on
 
 ### Sign-in and invitations
 
-People sign in with Google; the application does not store passwords. School accounts use the `@acdeducation.com`
-domain. New external Google accounts are accepted only when an administrator has invited that address and approved
-external email.
+People sign in with Google; the application does not store passwords. School accounts use the `@acdeducation.com` or
+`@acd.edu.ph` domain. New external Google accounts are accepted only when an administrator has invited that address and
+approved external email.
 
 There is no open registration form. A first-time user needs a school address, the configured developer email, or a
 pending invitation. An invitation carries the role and optional club the person should receive. Those values are applied
