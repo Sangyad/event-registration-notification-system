@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 
 import { Link } from "@/components/ui/Link/Link";
-import { SCHOOL_EMAIL_DOMAIN } from "@/lib/security/email-domain";
+import { SCHOOL_EMAIL_DOMAINS_TEXT } from "@/lib/security/email-domain";
 
 import styles from "./AuthErrorPage.module.css";
 
@@ -20,7 +20,7 @@ const errorMap: Record<string, { title: string; message: string }> = {
   },
   Domain: {
     title: "Email domain not allowed",
-    message: `Use your ${SCHOOL_EMAIL_DOMAIN} account, or ask an administrator to invite this email.`,
+    message: `Use your school account (${SCHOOL_EMAIL_DOMAINS_TEXT}), or ask an administrator to invite this email.`,
   },
   Deactivated: {
     title: "Account deactivated",

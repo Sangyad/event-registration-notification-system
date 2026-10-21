@@ -18,7 +18,7 @@ import { toastError } from "@/lib/hooks/toast-utils";
 import { useModalForm } from "@/lib/hooks/useModalForm";
 import {
   isAllowedEmail,
-  SCHOOL_EMAIL_DOMAIN,
+  SCHOOL_EMAIL_DOMAINS_TEXT,
   SCHOOL_EMAIL_REQUIRED_MESSAGE,
 } from "@/lib/security/email-domain";
 import { createFieldValidator, requiredString } from "@/lib/validation/form-utils";
@@ -122,8 +122,8 @@ export function AddUserModal({ isOpen, onOpenChange, onSuccess }: AddUserModalPr
             isDisabled={isPending}
             description={
               role === Role.ADMIN
-                ? `Permit an address outside ${SCHOOL_EMAIL_DOMAIN}. External admins get full access, so only use this for verified collaborators.`
-                : `Permit an address outside ${SCHOOL_EMAIL_DOMAIN}. Only use this for verified external collaborators.`
+                ? `Permit an address outside ${SCHOOL_EMAIL_DOMAINS_TEXT}. External admins get full access, so only use this for verified collaborators.`
+                : `Permit an address outside ${SCHOOL_EMAIL_DOMAINS_TEXT}. Only use this for verified external collaborators.`
             }
           >
             Allow external email
