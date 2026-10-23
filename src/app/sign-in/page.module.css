@@ -6,72 +6,54 @@
   padding: var(--space-2xl) var(--space-lg);
   background: var(--color-app-bg);
 
-  .layout {
-    display: flex;
-    width: min(100%, 30rem);
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-xl);
+  .card {
+    width: min(100%, 27rem);
+    padding: var(--space-3xl);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-bg);
+    box-shadow: var(--shadow-lg);
+    text-align: center;
 
-    .card {
-      width: 100%;
-      padding: clamp(var(--space-3xl), 8vw, var(--space-4xl));
-      border-radius: var(--radius-lg);
-      background: var(--color-surface-bg);
-      box-shadow: var(--shadow-lg);
-      text-align: center;
-
-      .brandMark {
-        width: 7.5rem;
-        height: auto;
-        margin: 0 auto var(--space-xl);
-      }
-
-      .greetings {
-        color: var(--color-text-primary);
-        font-family: var(--font-source-serif), Georgia, serif;
-        font-size: var(--font-size-2xl);
-        font-weight: var(--font-weight-semi-bold);
-        line-height: 36px;
-        white-space: nowrap;
-      }
-
-      .description {
-        margin: var(--space-sm) 0 var(--space-2xl);
-        color: var(--color-text-muted);
-        font-size: var(--font-size-sm);
-        line-height: var(--line-height-normal);
-      }
-
-      .note {
-        margin-top: var(--space-xl);
-        padding-top: var(--space-lg);
-        border-top: 1px solid var(--color-border-subtle);
-        color: var(--color-text-muted);
-        font-size: var(--font-size-xs);
-        line-height: var(--line-height-normal);
-      }
+    .brandMark {
+      width: 7.8rem;
+      height: auto;
+      margin: 0 auto var(--space-xl);
     }
 
-    .help {
+    .greetings {
+      color: var(--color-text-primary);
+      font-size: var(--font-size-2xl);
+      font-weight: var(--font-weight-semi-bold);
+      line-height: 36px;
+    }
+
+    .description {
+      margin: var(--space-sm) 0 var(--space-2xl);
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+      line-height: var(--line-height-normal);
+    }
+
+    .note {
+      margin-top: var(--space-xl);
+      padding-top: var(--space-lg);
+      border-top: 1px solid var(--color-border-subtle);
       color: var(--color-text-muted);
       font-size: var(--font-size-xs);
-      text-align: center;
+      line-height: var(--line-height-normal);
     }
   }
 }
 
-/* Narrow screens: keep the forced two-line title inside the card. */
+/* Narrow screens: tighten the card padding and heading. */
 @media (max-width: 27rem) {
   .page {
-    .layout {
-      .card {
-        padding: var(--space-2xl);
+    .card {
+      padding: var(--space-2xl);
 
-        .greetings {
-          font-size: var(--font-size-lg);
-          line-height: var(--line-height-tight);
-        }
+      .greetings {
+        font-size: var(--font-size-lg);
+        line-height: var(--line-height-tight);
       }
     }
   }

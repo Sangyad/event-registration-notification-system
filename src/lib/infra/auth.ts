@@ -63,7 +63,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         existingUser?.allowExternalEmail ?? pending?.allowExternalEmail ?? false;
 
       if (email !== devEmail && !hasPrivilegedRole && !isAllowedEmail(email, allowExternalEmail)) {
-        return "/sign-in?error=Domain";
+        return "/auth/error?error=Domain";
       }
 
       if (!existingUser) {

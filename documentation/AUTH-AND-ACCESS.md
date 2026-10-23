@@ -6,7 +6,7 @@ The application does not store passwords. Every sign-in goes through Google. Sch
 `@acdeducation.com` and `@acd.edu.ph` domains. New external Google accounts are accepted only when an administrator has
 invited the address and approved external access.
 
-The sign-in page is public and offers one action: **Sign in with Google**. After the OAuth round trip, the application
+The sign-in page is public and offers one action: **Continue with Google**. After the OAuth round trip, the application
 decides whether the person may enter and, for a first-time user, what role and club they receive.
 
 ## How sign-in is decided
@@ -21,7 +21,7 @@ decides whether the person may enter and, for a first-time user, what role and c
    database rather than frozen at sign-in.
 
 A deactivated account gets the clearer deactivation message before the domain check runs. An unapproved external address
-never becomes a user record; the sign-in card shows the rejection inline under the heading.
+never becomes a user record.
 
 ## Invitations
 
@@ -80,17 +80,16 @@ history and references intact.
 
 ## Notice pages
 
-Access failures land on a page that explains what happened and what to do next, except a rejected email domain, which
-returns to the sign-in card with the message inline:
+Access failures land on a page that explains what happened and what to do next:
 
-| Situation                               | What the person sees                                                |
-| --------------------------------------- | ------------------------------------------------------------------- |
-| No session on a protected page          | A prompt to sign in.                                                |
-| Email domain not allowed                | The sign-in card, with an inline "use your school account" message. |
-| Account deactivated                     | A message to contact an administrator.                              |
-| Signed in but missing a page permission | An access-denied page.                                              |
-| Admin removes their own admin access    | A confirmation that the change succeeded.                           |
-| Unknown authentication failure          | A generic sign-in error with a way back.                            |
+| Situation                               | What the person sees                                      |
+| --------------------------------------- | --------------------------------------------------------- |
+| No session on a protected page          | A prompt to sign in.                                      |
+| Email domain not allowed                | An explanation that a school account or invite is needed. |
+| Account deactivated                     | A message to contact an administrator.                    |
+| Signed in but missing a page permission | An access-denied page.                                    |
+| Admin removes their own admin access    | A confirmation that the change succeeded.                 |
+| Unknown authentication failure          | A generic sign-in error with a way back.                  |
 
 These pages contain no application data. They exist so expected access changes do not end in a generic error boundary.
 
