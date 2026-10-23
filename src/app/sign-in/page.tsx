@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { Suspense } from "react";
 
 import { SignInForm } from "@/features/auth/components/SignInForm/SignInForm";
 
@@ -12,20 +11,15 @@ export default function SignInPage() {
         <Image
           src="/school-logo.svg"
           alt="School logo"
-          width={100}
-          height={100}
+          width={120}
+          height={120}
           className={styles.brandMark}
           priority
         />
-        <p className={styles.title}>Event Registration &amp; Notification System</p>
-        <h1 className={styles.greetings}>Welcome back!</h1>
-        <p className={styles.description}>
-          Sign in with your school or invited account to continue.
-        </p>
-        <Suspense fallback={null}>
-          <SignInForm />
-        </Suspense>
-        <p className={styles.note}>Only @acdeducation.com accounts are accepted.</p>
+        <h1 className={styles.greetings}>Welcome to Event Registration & Notification</h1>
+        <p className={styles.description}>Sign in with your school Google account</p>
+        <SignInForm />
+        <p className={styles.note}>Need access? Contact your school administrator</p>
       </section>
     </main>
   );

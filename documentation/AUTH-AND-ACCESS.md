@@ -3,10 +3,10 @@
 ## Google is the only sign-in method
 
 The application does not store passwords. Every sign-in goes through Google. School accounts use the
-`@acdeducation.com` domain. New external Google accounts are accepted only when an administrator has invited the address
-and approved external access.
+`@acdeducation.com` and `@acd.edu.ph` domains. New external Google accounts are accepted only when an administrator has
+invited the address and approved external access.
 
-The sign-in page is public and offers one action: **Sign in with Google**. After the OAuth round trip, the application
+The sign-in page is public and offers one action: **Continue with Google**. After the OAuth round trip, the application
 decides whether the person may enter and, for a first-time user, what role and club they receive.
 
 ## How sign-in is decided
