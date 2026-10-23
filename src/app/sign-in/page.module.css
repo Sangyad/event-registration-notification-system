@@ -8,14 +8,14 @@
 
   .card {
     width: min(100%, 27rem);
-    padding: var(--space-3xl);
+    padding: var(--space-4xl) var(--space-3xl);
     border-radius: var(--radius-lg);
     background: var(--color-surface-bg);
     box-shadow: var(--shadow-lg);
     text-align: center;
 
     .brandMark {
-      width: 7.8rem;
+      width: 8rem;
       height: auto;
       margin: 0 auto var(--space-xl);
     }
